@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P3 Science Question Bank</title>
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">P3</div>
+    <div>
+      <h1>P3 Science Question Bank</h1>
+      <p class="sub" id="brandSub">2025 · Top school papers · keyword-based scoring</p>
+    </div>
+  </div>
+  <nav class="topnav">
+    <button class="navbtn" data-go="home">Practice</button>
+    <button class="navbtn" data-go="wrong">Wrong-answer book <span class="badge" id="wrongBadge">0</span></button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ================= Home ================= -->
+<section id="view-home" class="view">
+  <div class="hero">
+    <h2>Pick a range and start practising</h2>
+    <p>Filter by year, school and topic. Every question is scored instantly against its <strong>scoring keywords</strong> — missed keywords are listed one by one.</p>
+  </div>
+
+  <div class="filters">
+    <div class="fgroup">
+      <div class="flabel">Year</div>
+      <div class="chips" id="fYear"></div>
+    </div>
+    <div class="fgroup">
+      <div class="flabel">Paper</div>
+      <div class="chips" id="fPaper"></div>
+    </div>
+    <div class="fgroup">
+      <div class="flabel">School <button class="mini" id="schoolAll">All</button><button class="mini" id="schoolNone">Clear</button></div>
+      <div class="chips" id="fSchool"></div>
+    </div>
+    <div class="fgroup">
+      <div class="flabel">Topic</div>
+      <div id="fTopic" class="topics"></div>
+    </div>
+    <div class="fgroup">
+      <div class="flabel">Difficulty</div>
+      <div class="chips" id="fDiff"></div>
+    </div>
+  </div>
+
+  <div class="startbar">
+    <div class="matchinfo">
+      <strong id="matchCount">0</strong> questions matched
+      <span class="muted" id="matchDetail"></span>
+    </div>
+    <div class="startright">
+      <label class="inline">Questions this round
+        <select id="countSel">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="30">30</option>
+          <option value="0">All</option>
+        </select>
+      </label>
+      <button class="btn primary" id="startBtn">Start practice</button>
+    </div>
+  </div>
+
+  <div class="statcards">
+    <div class="statcard"><div class="num" id="stTotal">0</div><div class="lbl">Questions in bank</div></div>
+    <div class="statcard"><div class="num" id="stPapers">0</div><div class="lbl">Papers</div></div>
+    <div class="statcard"><div class="num" id="stWrong">0</div><div class="lbl">In wrong-answer book</div></div>
+    <div class="statcard"><div class="num" id="stDone">0</div><div class="lbl">Questions answered</div></div>
+  </div>
+
+  <div class="tipbox">
+    <strong>How to use:</strong> practise by topic first (e.g. "Magnets", 122 questions), then attempt full papers (e.g. "Rosyth 2025 EOY") as mock exams.
+    For open-ended questions, answer in complete English sentences — grading matches keywords, and you can fine-tune your score against the model answer afterwards.
+  </div>
+</section>
+
+<!-- ================= Quiz ================= -->
+<section id="view-quiz" class="view hidden">
+  <div class="quizhead">
+    <button class="btn ghost" id="quitBtn">Exit</button>
+    <div class="progresswrap">
+      <div class="progress"><div id="progBar"></div></div>
+      <div class="progtext"><span id="progText">1 / 20</span> · Round score <strong id="liveScore">0</strong> / <span id="liveTotal">0</span></div>
+    </div>
+  </div>
+
+  <article class="qcard" id="qcard">
+    <div class="qmeta" id="qmeta"></div>
+    <div class="qstem" id="qstem"></div>
+    <div class="qanswer" id="qanswer"></div>
+    <div class="qactions" id="qactions"></div>
+    <div class="feedback hidden" id="feedback"></div>
+  </article>
+</section>
+
+<!-- ================= Round result ================= -->
+<section id="view-result" class="view hidden">
+  <div class="resulthead">
+    <div class="scorebig"><span id="resScore">0</span><small id="resTotal">/0</small></div>
+    <div class="resmeta">
+      <div id="resRate">Score rate 0%</div>
+      <div class="muted" id="resNote"></div>
+    </div>
+  </div>
+  <div class="reslist" id="resList"></div>
+  <div class="resactions">
+    <button class="btn primary" id="againWrong">Redo wrong ones</button>
+    <button class="btn" id="printRound">Print wrong ones</button>
+    <button class="btn ghost" data-go="wrong">Wrong-answer book</button>
+    <button class="btn ghost" data-go="home">Home</button>
+  </div>
+</section>
+
+<!-- ================= Wrong-answer book ================= -->
+<section id="view-wrong" class="view hidden">
+  <div class="wronghead">
+    <div>
+      <h2>Wrong-answer book</h2>
+      <p class="muted" id="wrongSummary">—</p>
+    </div>
+    <div class="wrongtools">
+      <select id="wSchool"><option value="">All schools</option></select>
+      <select id="wTopic"><option value="">All topics</option></select>
+      <select id="wSort">
+        <option value="recent">By time (new → old)</option>
+        <option value="oldest">By time (old → new)</option>
+        <option value="score">By marks lost</option>
+      </select>
+      <button class="btn sm" id="wbExport" title="Download your wrong-answer book as a JSON file">⬇ Export 错题集</button>
+      <button class="btn sm ghost" id="wbImport" title="Load a previously exported wrong-answer book">⬆ Import 错题集</button>
+      <input type="file" id="wbImportFile" accept="application/json,.json" hidden>
+    </div>
+  </div>
+
+  <div class="bulkbar">
+    <label class="inline"><input type="checkbox" id="wAll"> Select all</label>
+    <span class="muted" id="wSelInfo">Nothing selected</span>
+    <div class="bulkright">
+      <button class="btn" id="wRedo">Redo selected</button>
+      <button class="btn" id="wPrint">Print selected</button>
+      <button class="btn ghost danger" id="wRemove">Remove from book</button>
+    </div>
+  </div>
+
+  <div class="wronglist" id="wrongList"></div>
+  <div class="empty hidden" id="wrongEmpty">
+    <div class="emptyicon">✓</div>
+    <p>Your wrong-answer book is empty. Questions that don't score full marks are added here automatically.</p>
+    <button class="btn primary" data-go="home">Start practising</button>
+  </div>
+</section>
+
+<!-- ================= Print ================= -->
+<section id="printArea" class="print-area"></section>
+
+</main>
+
+<div class="modal hidden" id="printModal">
+  <div class="modalbox">
+    <h3>Print questions</h3>
+    <p class="muted">Exports an A4 worksheet with blank space for handwritten answers.</p>
+    <label class="opt"><input type="checkbox" id="optAnswer" checked> Include answers &amp; scoring keywords (separate page, easy to cut off)</label>
+    <label class="opt"><input type="checkbox" id="optSource" checked> Show question source (school / year / question no.)</label>
+    <label class="opt"><input type="checkbox" id="optBlank" checked> Add answer lines below each question</label>
+    <div class="modalactions">
+      <button class="btn ghost" id="printCancel">Cancel</button>
+      <button class="btn primary" id="printGo">Print / Save as PDF</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="assets/grade.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
