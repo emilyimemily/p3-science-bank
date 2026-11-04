@@ -308,7 +308,177 @@
   // own answer space: a drawing (canvas), a fill-in-the-blank (single input), or
   // a written answer (text box). We detect the sub-parts from the stem and pick
   // a widget per part. Single-part OEQ questions keep the original one-box layout.
-  let oeqState = { parts: {}, canvases: {} };
+  let oeqState = { parts: {}, canvases: {}, ticks: {} };
+
+  /* A "tick the correct box(es)" part renders its options straight into the
+     question's own table (the column headed "Keep the same" / "Tick (√)" /
+     "True | False"). We read the table from the stem so the widget sits exactly
+     where the paper prints the boxes, and no separate text box is shown. */
+  function tickSpecFor(q, part) {
+    const meta = part.tick || {};
+    const div = document.createElement("div");
+    div.innerHTML = q.stem || "";
+    const tables = Array.from(div.querySelectorAll("table"));
+    const table = tables[meta.table || 0];
+    if (!table) return null;
+    const trs = Array.from(table.querySelectorAll("tr"));
+    if (trs.length < 2) return null;
+    const cellsOf = tr => Array.from(tr.querySelectorAll("td,th"))
+      .map(td => (td.textContent || "").replace(/\s+/g, " ").trim());
+    const head = cellsOf(trs[0]);
+    const body = trs.slice(1).map(cellsOf).filter(r => r.length);
+    if (!body.length) return null;
+    const blank = c => !c || /^\[\s*\]$/.test(c) || /^[_ ]+$/.test(c);
+    const maxCols = Math.max(head.length, ...body.map(r => r.length));
+    // First column from which every trailing cell is an empty answer box.
+    let startCol = 1;
+    for (let c = 1; c < maxCols; c++) {
+      if (body.every(r => r.slice(c).every(blank))) { startCol = c; break; }
+    }
+    const rows = body.map(r => r.slice(0, startCol).filter(Boolean).join(" ").trim());
+    const ncols = Math.max(1, maxCols - startCol);
+    return {
+      table: meta.table || 0, rows, ncols, startCol,
+      choices: head.slice(startCol), correct: meta.correct || []
+    };
+  }
+
+  function injectTickInputs(q, parts, rec) {
+    const stemTables = Array.from(document.querySelectorAll("#qstem table"));
+    parts.filter(p => p.type === "tick").forEach(p => {
+      const spec = tickSpecFor(q, p);
+      if (!spec) return;
+      const table = stemTables[spec.table];
+      if (!table) return;
+      const trs = Array.from(table.querySelectorAll("tr")).slice(1);
+      const saved = (rec && rec.ticks && rec.ticks[p.letter]) || {};
+      const okRows = (rec && rec.tickOk && rec.tickOk[p.letter]) || null;
+      trs.forEach((tr, r) => {
+        const tds = Array.from(tr.querySelectorAll("td,th"));
+        for (let c = 0; c < spec.ncols; c++) {
+          const td = tds[spec.startCol + c];
+          if (!td) continue;
+          const inp = document.createElement("input");
+          inp.type = "checkbox";
+          inp.className = "tickinput";
+          inp.dataset.tickpart = p.letter;
+          inp.dataset.tickrow = String(r);
+          inp.dataset.tickcol = String(c);
+          const lab = document.createElement("label");
+          lab.className = "tickcell";
+          lab.title = spec.rows[r] ? spec.rows[r] + (spec.ncols > 1 ? " — " + (spec.choices[c] || "") : "") : "";
+          lab.appendChild(inp);
+          td.innerHTML = "";
+          td.appendChild(lab);
+          td.classList.add("tickbox");
+          if (saved[r] === c || (spec.ncols === 1 && saved[r] === 0 && c === 0)) inp.checked = true;
+          if (rec) {
+            inp.disabled = true;
+            if (okRows && okRows[r] != null) td.classList.add(okRows[r] ? "graded-ok" : "graded-miss");
+          } else if (spec.ncols > 1) {
+            // one tick per row, but allow unticking by clicking the same box again
+            inp.addEventListener("change", () => {
+              if (!inp.checked) return;
+              tr.querySelectorAll("input.tickinput").forEach(x => { if (x !== inp) x.checked = false; });
+            });
+          }
+        }
+      });
+    });
+  }
+
+  function readTickInputs(parts) {
+    const out = {};
+    parts.filter(p => p.type === "tick").forEach(p => { out[p.letter] = {}; });
+    document.querySelectorAll("#qstem input.tickinput").forEach(inp => {
+      if (!inp.checked) return;
+      const L = inp.dataset.tickpart;
+      if (!out[L]) out[L] = {};
+      out[L][inp.dataset.tickrow] = Number(inp.dataset.tickcol);
+    });
+    return out;
+  }
+
+  function tickText(q, part, selected) {
+    const spec = tickSpecFor(q, part);
+    if (!spec) return "";
+    return spec.rows.map((label, r) => {
+      const c = selected[r];
+      if (c == null) return "";
+      return label + (spec.ncols > 1 && spec.choices[c] ? " → " + spec.choices[c] : "");
+    }).filter(Boolean).join("; ");
+  }
+
+  // Questions with a tick table are graded exactly: each row is right or wrong,
+  // and the written sub-parts are graded on their own checkpoints only.
+  function gradeWithTicks(q, parts, textByPart, tickByPart) {
+    const res = [], partScores = {}, tickOk = {};
+    let score = 0;
+    const tickParts = parts.filter(p => p.type === "tick");
+    const otherParts = parts.filter(p => p.type !== "tick");
+    const norm = s => String(s || "").toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+    const tickLabels = [];
+    const tickPartLabels = new Set();
+
+    tickParts.forEach(p => {
+      tickPartLabels.add(p.label);
+      const spec = tickSpecFor(q, p);
+      const correct = p.tick ? p.tick.correct : [];
+      const selected = tickByPart[p.letter] || {};
+      const ok = {};
+      let hits = 0;
+      if (spec) {
+        spec.rows.forEach((label, r) => {
+          tickLabels.push(norm(label));
+          const want = Array.isArray(correct)
+            ? (correct.indexOf(r) >= 0 ? 0 : -1)
+            : (correct[String(r)] != null ? Number(correct[String(r)]) : -1);
+          const got = selected[r] != null ? Number(selected[r]) : -1;
+          const good = got === want;
+          ok[r] = good;
+          if (good) hits++;
+          const wantTxt = want < 0 ? "leave unticked" : "tick " + (spec.choices[want] || "this box");
+          const gotTxt = got < 0 ? "you left it blank" : "you ticked " + (spec.choices[got] || "it");
+          res.push({ part: p.label, span: label + " — " + wantTxt + (good ? "" : " · " + gotTxt), hit: good });
+        });
+      }
+      tickOk[p.letter] = ok;
+      const sc = spec && spec.rows.length ? roundHalf(p.marks * hits / spec.rows.length) : 0;
+      partScores[p.letter] = sc;
+      score += sc;
+    });
+
+    const otherMarks = otherParts.reduce((a, p) => a + (p.marks || 0), 0);
+    const cps = (q.checkpoints || []).filter(c => {
+      if (c.part && tickPartLabels.has(c.part)) return false;
+      if (!c.part) {
+        const s = norm(c.span);
+        if (tickLabels.some(l => l.length > 4 && s.indexOf(l) >= 0)) return false;
+      }
+      return true;
+    });
+    const manual = cps.filter(c => c.manual);
+    const tagged = cps.some(c => c.part);
+    if (tagged) {
+      otherParts.forEach(p => {
+        partScores[p.letter] = 0;
+        if (p.type === "draw") return;
+        const pcps = cps.filter(c => c.part === p.label);
+        if (!pcps.length) return;
+        const g = window.QBGrade.gradeOEQ({ marks: p.marks, checkpoints: pcps }, textByPart[p.letter] || "");
+        partScores[p.letter] = g.score; score += g.score;
+        g.res.forEach(r => res.push({ part: p.label, span: r.span, hit: r.hit }));
+      });
+    } else if (cps.length && otherMarks > 0) {
+      const joined = otherParts.map(p => p.type === "draw" ? "" : (textByPart[p.letter] || "")).join(" ");
+      const g = window.QBGrade.gradeOEQ({ marks: otherMarks, checkpoints: cps }, joined);
+      score += g.score;
+      const sole = otherParts.length === 1 ? otherParts[0] : null;
+      if (sole) partScores[sole.letter] = g.score;
+      g.res.forEach(r => res.push({ part: r.part || (sole ? sole.label : ""), span: r.span, hit: r.hit }));
+    }
+    return { score: Math.min(roundHalf(score), q.marks), res, manual, auto: true, partScores, drawParts: [], tickOk };
+  }
 
   function getQuestionParts(q) {
     if (Array.isArray(q.parts) && q.parts.length) return q.parts;
@@ -343,13 +513,16 @@
   // Grade each sub-part against its own checkpoints (matched by the "(a)" part
   // tag). Drawing parts carry no auto keywords (graded by the student). Questions
   // whose checkpoints are not part-tagged fall back to the legacy whole-text grade.
-  function gradeParts(q, parts, textByPart) {
+  function gradeParts(q, parts, textByPart, tickByPart) {
+    if (parts.some(p => p.type === "tick")) return gradeWithTicks(q, parts, textByPart, tickByPart || {});
     const cps = q.checkpoints || [];
     const letters = parts.map(p => p.letter);
     const partsCpSet = new Set(letters.map(l => "(" + l + ")"));
     const hasParted = cps.some(c => c.part && partsCpSet.has(c.part));
     if (!hasParted) {
-      const joined = parts.map(p => p.type === "draw" ? "" : (textByPart[p.letter] || "")).join(" ");
+      // A drawing part also has a note/annotation textarea — include those words
+      // so labels written next to a drawing can satisfy their keywords.
+      const joined = parts.map(p => textByPart[p.letter] || "").join(" ");
       const g = window.QBGrade.gradeOEQ(q, joined);
       return { score: g.score, res: g.res, manual: g.manual, auto: g.auto, partScores: null, drawParts: [] };
     }
@@ -400,14 +573,16 @@
 
   function renderPartedOEQ(q, parts, rec) {
     const isRec = !!(rec && rec.type === "OEQ" && rec.parts);
-    oeqState = { parts: {}, canvases: {} };
+    oeqState = { parts: {}, canvases: {}, ticks: {} };
     const box = $("#qanswer");
     let html = `<div class="partsanswers">`;
     parts.forEach(p => {
-      html += `<div class="partans" data-part="${p.letter}">
-        <div class="partlabel">${esc(p.label)} ${p.marks ? `<span class="pmark">${p.marks} mark${p.marks > 1 ? "s" : ""}</span>` : ""}</div>`;
+      html += `<div class="partans" data-part="${p.letter}">`;
+      if (p.label) html += `<div class="partlabel">${esc(p.label)} ${p.marks ? `<span class="pmark">${p.marks} mark${p.marks > 1 ? "s" : ""}</span>` : ""}</div>`;
       if (p.hint) html += `<div class="parthint">${esc(p.hint.slice(0, 160))}</div>`;
-      if (p.type === "draw") {
+      if (p.type === "tick") {
+        html += `<div class="tickhint">Tick the boxes in the table above — no written answer needed here.</div>`;
+      } else if (p.type === "draw") {
         html += `<div class="canvaswrap">
             <canvas class="drawcanvas" data-part="${p.letter}" width="600" height="200"></canvas>
             <button type="button" class="btn sm clearcanvas" data-part="${p.letter}">Clear drawing</button>
@@ -421,9 +596,11 @@
       html += `</div>`;
     });
     html += `</div>`;
-    html += `<div class="structhint"><span>One box per (a)(b)(c)</span><span>Hit the keywords</span><span>Submit</span></div>`;
-    html += `<p class="answerhint">Each sub-question has its own answer space. Drawing parts are graded by you afterwards; the rest are checked against the scoring keywords.</p>`;
+    const hasTicks = parts.some(p => p.type === "tick");
+    html += `<div class="structhint"><span>${hasTicks ? "Tick the boxes above" : "One box per (a)(b)(c)"}</span><span>Hit the keywords</span><span>Submit</span></div>`;
+    html += `<p class="answerhint">${hasTicks ? "Tick the correct boxes in the question table, and write answers only for the other sub-questions. Ticked boxes are graded automatically." : "Each sub-question has its own answer space. Drawing parts are graded by you afterwards; the rest are checked against the scoring keywords."}</p>`;
     box.innerHTML = html;
+    if (hasTicks) injectTickInputs(q, parts, isRec ? rec : null);
 
     parts.forEach(p => {
       const el = box.querySelector(`.ans[data-part="${p.letter}"]`);
@@ -710,7 +887,7 @@
       }
     } else {
       const parts = getQuestionParts(q);
-      if (parts && parts.length >= 2) {
+      if (parts && (parts.length >= 2 || parts.some(p => p.type === "tick"))) {
         renderPartedOEQ(q, parts, rec);
       } else {
         box.innerHTML = `
@@ -781,8 +958,9 @@
           tfMarks: g.tfMarks, marks: q.marks, score: 0, ok: false, ts: Date.now(), gaveUp: true };
       } else {
         const parts = getQuestionParts(q);
-        if (parts && parts.length >= 2) {
-          rec = { id: q.id, type: "OEQ", parts: {}, canvases: {}, partRes: null,
+        if (parts && (parts.length >= 2 || parts.some(p => p.type === "tick"))) {
+          rec = { id: q.id, type: "OEQ", parts: {}, canvases: {}, ticks: {}, tickOk: {}, partRes: null,
+            tickParts: parts.filter(p => p.type === "tick").map(p => p.label),
             score: 0, marks: q.marks, ok: false, ts: Date.now(), gaveUp: true,
             res: (q.checkpoints || []).map(c => ({ part: c.part || "", span: c.span, hit: false, manual: !!c.manual })),
             manual: (q.checkpoints || []).filter(c => c.manual), auto: false };
@@ -872,8 +1050,8 @@
       };
     } else {
       const parts = getQuestionParts(q);
-      if (parts && parts.length >= 2) {
-        oeqState.parts = {}; oeqState.canvases = {};
+      if (parts && (parts.length >= 2 || parts.some(p => p.type === "tick"))) {
+        oeqState.parts = {}; oeqState.canvases = {}; oeqState.ticks = {};
         parts.forEach(p => {
           const el = document.querySelector(`#qanswer .ans[data-part="${p.letter}"]`);
           oeqState.parts[p.letter] = el ? el.value : "";
@@ -884,11 +1062,22 @@
             }
           }
         });
-        const anyFilled = Object.values(oeqState.parts).some(v => v.trim()) || Object.keys(oeqState.canvases).length > 0;
+        const hasTicks = parts.some(p => p.type === "tick");
+        if (hasTicks) {
+          oeqState.ticks = readTickInputs(parts);
+          parts.filter(p => p.type === "tick").forEach(p => {
+            oeqState.parts[p.letter] = tickText(q, p, oeqState.ticks[p.letter] || {});
+          });
+        }
+        const anyFilled = Object.values(oeqState.parts).some(v => v.trim())
+          || Object.keys(oeqState.canvases).length > 0
+          || Object.values(oeqState.ticks).some(t => Object.keys(t).length > 0);
         if (!anyFilled) { flash('Answer at least one sub-question (or click "Don\'t know — show answer")'); return; }
-        const g = gradeParts(q, parts, oeqState.parts);
+        const g = gradeParts(q, parts, oeqState.parts, oeqState.ticks);
         rec = {
           id: q.id, type: "OEQ", parts: oeqState.parts, canvases: oeqState.canvases,
+          ticks: oeqState.ticks, tickOk: g.tickOk || {},
+          tickParts: parts.filter(p => p.type === "tick").map(p => p.label),
           partRes: g.partScores, drawParts: g.drawParts, score: g.score, marks: q.marks,
           res: g.res, manual: g.manual, auto: g.auto, ok: g.score >= q.marks, ts: Date.now()
         };
@@ -958,6 +1147,7 @@
         const res = rec.res || [];
         const hasParts = !!(rec.partRes || res.some(r => r.part));
         const drawSet = new Set((rec.drawParts || []).map(l => "(" + l + ")"));
+        const tickSet = new Set(rec.tickParts || []);
         if (!hasParts) {
           const hits = res.filter(r => r.hit);
           const miss = res.filter(r => !r.hit);
@@ -987,7 +1177,7 @@
           Object.keys(groups).forEach(k => {
             const items = groups[k];
             const isDraw = drawSet.has(k);
-            html += `<div class="kwpart"><div class="kwparthead">${esc(k || "Whole question")}${isDraw ? ' <span class="tag drawtag">drawing — grade yourself</span>' : ''}</div><div class="kwchips">`;
+            html += `<div class="kwpart"><div class="kwparthead">${esc(k || "Whole question")}${isDraw ? ' <span class="tag drawtag">drawing — grade yourself</span>' : (tickSet.has(k) ? ' <span class="tag ticktag">tick boxes</span>' : '')}</div><div class="kwchips">`;
             items.forEach(r => {
               html += `<div class="kw ${r.manual ? "manual" : (r.hit ? "hit" : "miss")}"><span class="mark">${r.manual ? "?" : (r.hit ? "✓" : "✗")}</span><span class="txt">${esc(r.span)}</span></div>`;
             });

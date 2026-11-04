@@ -301,6 +301,18 @@ textarea.answer:focus{outline:2px solid #bfe0d9;border-color:var(--accent)}
 .ans.blank[readonly]{border-bottom-style:dashed}
 .blankwrap .unit{font-size:14px;color:var(--ink-soft);white-space:nowrap}
 
+/* tick-the-box parts: checkboxes live in the question's own table */
+.tickhint{font-size:13px;color:#2b4c8c;background:#eef2fb;border:1px solid #dae3f8;
+  border-radius:9px;padding:10px 12px;line-height:1.5}
+.qstem td.tickbox{text-align:center;padding:4px 8px;min-width:56px}
+.qstem .tickcell{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;min-width:26px;min-height:26px}
+.qstem .tickinput{width:19px;height:19px;accent-color:var(--accent-dark);cursor:pointer;margin:0}
+.qstem .tickinput:disabled{cursor:default;opacity:.85}
+.qstem td.tickbox.graded-ok{background:#eaf7f0;border-color:#9dd6b6}
+.qstem td.tickbox.graded-miss{background:#fdf0ef;border-color:#eeb6b2}
+.qstem.locked .tickcell{cursor:default}
+.ticktag{background:#eef2fb;border-color:#dae3f8;color:#2b4c8c}
+
 /* feedback: group keyword chips by sub-part */
 .kwpart{margin-top:10px}
 .kwparthead{font-weight:700;font-size:13px;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:8px}

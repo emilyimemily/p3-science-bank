@@ -4446,6 +4446,26 @@ window.QUESTIONS = [
 "difficulty": 2,
 "kw": "",
 "stem": "<p>Raj wants to find out if the amount of water affects plant growth. He placed the two pots of plants in the garden and watered each pot with different amounts of water daily. He then recorded the height of each plant after 15 days in the table below.</p>\n<figure><img src=\"images/EOY_AiTong/q20_fig1.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(a) Identify the following variables in the experiment. [2]<br>Changed variable: ____________<br>Measured variable: ____________<br>Raj spotted animal X in one of the pots.</p>\n<figure><img src=\"images/EOY_AiTong/q20_fig2.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(b) (printed as (c) on the paper) Raj wants to find out if animal X is an insect. What are the possible action(s) he can take to confirm if it is an insect? Put a tick (√) in the table below. [1]</p>\n<table><tbody><tr><td>Actions</td><td>Tick (√)</td></tr><tr><td>Measure its length</td><td></td></tr><tr><td>Check to see if it has wings</td><td></td></tr><tr><td>Check to see if it has feelers</td><td></td></tr><tr><td>Check to see if it has six legs</td><td></td></tr><tr><td>Check to see if it has three body parts</td><td></td></tr></tbody></table>",
+"parts": [
+{
+"label": "(a)",
+"letter": "a",
+"type": "text",
+"marks": 2,
+"hint": "Identify the changed variable and the measured variable."
+},
+{
+"label": "(b)",
+"letter": "b",
+"type": "tick",
+"marks": 1,
+"hint": "Tick the action(s) that would confirm animal X is an insect.",
+"tick": {
+"table": 0,
+"correct": [3,4]
+}
+}
+],
 "options": [],
 "myAnswer": "(a) Changed variable: the amount of water given daily. Measured variable: the height of the plant (on day 15).\n  (b) Tick \"Check to see if it has six legs\" 和 \"Check to see if it has three body parts\"。",
 "answer": "(Official Correction Template):\n  (a) Changed variable: amount of water; Measured variable: height of plant.\n  (b) Ticks: Check to see if it has six legs √; Check to see if it has three body parts √.",
@@ -4709,6 +4729,26 @@ window.QUESTIONS = [
 "difficulty": 4,
 "kw": "",
 "stem": "<p>Ethan moved a U-shaped magnet over several objects as shown below.</p>\n<figure><img src=\"images/EOY_AiTong/q25_fig1.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(a) Classify the objects using the table below. [2]</p>\n<table><tbody><tr><td>Can be attracted to the magnet</td><td>Cannot be attracted to the magnet</td></tr></tbody></table>\n<p>Ethan conducted another experiment during his science lesson using four rings, P, Q, R and S as shown below.</p>\n<figure><img src=\"images/EOY_AiTong/q25_fig2.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(b) Based on the diagram above, put a tick (√) in the correct box for each of the statement. [2]</p>\n<table><tbody><tr><td>Statements</td><td>Definitely true</td><td>Definitely false</td><td>Not possible to tell</td></tr><tr><td>P is made of a magnetic material.</td><td></td><td></td><td></td></tr><tr><td>S is made of non-magnetic material.</td><td></td><td></td><td></td></tr><tr><td>Q is not a magnet.</td><td></td><td></td><td></td></tr><tr><td>S and R are attracted to each other.</td><td></td><td></td><td></td></tr></tbody></table>",
+"parts": [
+{
+"label": "(a)",
+"letter": "a",
+"type": "text",
+"marks": 2,
+"hint": "Classify the objects into the two groups in the table above."
+},
+{
+"label": "(b)",
+"letter": "b",
+"type": "tick",
+"marks": 2,
+"hint": "Tick one box for each statement.",
+"tick": {
+"table": 1,
+"correct": {"0":0,"1":2,"2":1,"3":1}
+}
+}
+],
 "options": [],
 "myAnswer": "(a) Can be attracted: steel pin；Cannot be attracted: eraser, plastic coin, aluminium foil.\n  (b) P is made of a magnetic material — Definitely true（P 能悬空被杆上磁体支撑/作用）。S is made of non-magnetic material — Not possible to tell。Q is not a magnet — Definitely false（Q 悬空说明受磁力排斥，必为磁铁）。S and R are attracted to each other — Definitely false。",
 "answer": "(Official Correction Template):\n  (a) Group Magnetic: Steel pin; Group Non-magnetic: Eraser, Aluminium foil, Plastic coin.\n  (b) P is made of a magnetic material — Definitely true √; S is made of non-magnetic materials — Not possible to tell √; Q is not a magnet — Definitely false √; S and R are attracted to each other — Definitely false √.",
@@ -6331,6 +6371,26 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>Bert has two types of liquid soap, A and B. He wanted to compare how clean his hands were after washing with the liquid soaps.</p>\n<p>He pressed a dirty finger on the surface of a plate. The plate was left in a warm room. After a few days, bacteria were observed where he pressed his finger.</p>\n<figure><img src=\"images/EOY_HenryPark/q30_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>Left: pressing a plate with a finger; right: after a few days, bacteria grow on the pressed spot.</figcaption></figure>\n<p>Bacteria are tiny living things that are smaller than fungi.</p>\n<p>a)  Name a suitable instrument that Bert used to observe the bacteria clearly as shown in the diagram above.  [1]<br>b)  After pressing his finger on the plate, Bert washed his hands with liquid soap A. He repeated the experiment using the same finger and liquid soap B. When repeating his experiment, which condition(s) must be kept the same to ensure a fair test? Tick (√) the correct box(es).  [2]</p>\n<table><tbody><tr><td>Condition</td><td>Keep the same</td></tr><tr><td>Amount of liquid soap</td><td>[ ]</td></tr><tr><td>Type of liquid soap</td><td>[ ]</td></tr><tr><td>Amount of bacteria</td><td>[ ]</td></tr><tr><td>Number of days left in the room</td><td>[ ]</td></tr></tbody></table>",
+"parts": [
+{
+"label": "(a)",
+"letter": "a",
+"type": "text",
+"marks": 1,
+"hint": "Name a suitable instrument used to observe the bacteria."
+},
+{
+"label": "(b)",
+"letter": "b",
+"type": "tick",
+"marks": 2,
+"hint": "Tick the condition(s) that must be kept the same for a fair test.",
+"tick": {
+"table": 0,
+"correct": [0,3]
+}
+}
+],
 "options": [],
 "myAnswer": "a) A microscope.；b) 勾选 Amount of liquid soap 和 Number of days left in the room（type of soap 是要改变的自变量；同一根手指按压使细菌量相同）。",
 "answer": "a) He can use a microscope.；b) Amount of liquid soap；Number of days left in the room",
@@ -6404,8 +6464,8 @@ window.QUESTIONS = [
 "stem": "<p>Rachel studied the life cycle of a grasshopper. She recorded the number of days for each stage of its life cycle in a table as shown below. However, she did not present the stages of the life cycle in the correct order.</p>\n<table><tbody><tr><td>Stage</td><td>Number of days at each stage</td></tr><tr><td>nymph</td><td>35</td></tr><tr><td>adult</td><td>280</td></tr><tr><td>egg</td><td>21</td></tr></tbody></table>\n<p>a)  Use a pencil to draw the life cycle of the grasshopper using only words and arrows in the space given below.  [1]<br>b)  State one difference between the nymph and the adult grasshopper. (Do NOT state the difference in size or length)  [1]<br>c)  Based on the information in Rachel's table, how many days does it take for the grasshopper to become an adult <u>after the eggs are laid</u>?  [1]<br>____________ days</p>",
 "options": [],
 "myAnswer": "a) egg → nymph → adult →（回到）egg，画成带箭头的循环Diagram。\n  b) The nymph does not have wings but the adult grasshopper has wings.\n  c) 21 + 35 = 56 days（按\"产卵后\"字面计算：卵期 21 天 + 若虫期 35 天）。",
-"answer": "a) Diagram: egg → nymph → adult cycle (official answer presented as a hand-drawn diagram); b) Nymph do not have wings but adult grasshopper has wings; c) 35",
-"keypoints": "a) Draw the complete egg\nnymph\nadult three-stage cycle with arrows (words and arrows only) [1 mark]\nThe adult has wings (do not answer differences in size/length) [1 mark]\nc) Official answer: 35 days (number of days in the nymph stage",
+"answer": "a) Diagram: egg → nymph → adult cycle (official answer presented as a hand-drawn diagram); b) Nymph do not have wings but adult grasshopper has wings; c) 56 days (21 + 35)",
+"keypoints": "a) Draw the complete egg\nnymph\nadult three-stage cycle with arrows (words and arrows only) [1 mark]\nThe adult has wings (do not answer differences in size/length) [1 mark]\nc) 56 days (egg 21 days + nymph 35 days); the 280-day adult stage is not included",
 "checkpoints": [
 {
 "part": "",
@@ -6445,11 +6505,10 @@ window.QUESTIONS = [
 },
 {
 "part": "",
-"span": "c) Official answer: 35 days (number of days in the nymph stage",
+"span": "c) 56 days (egg 21 days + nymph 35 days)",
 "alts": [
 [
-"35",
-"nymph"
+"56"
 ]
 ],
 "manual": false
@@ -14858,6 +14917,19 @@ window.QUESTIONS = [
 "difficulty": 2,
 "kw": "",
 "stem": "<p>Based on the characteristics of living things, state whether the following statements are 'True' or 'False'.</p>\n<p>Put a tick (✓) in the correct column. [2]</p>\n<table><tbody><tr><td>Statement</td><td>True</td><td>False</td></tr><tr><td>(a) All living things can grow and die.</td><td></td><td></td></tr><tr><td>(b) Not all living things can reproduce.</td><td></td><td></td></tr><tr><td>(c) Anything which can move is a living thing.</td><td></td><td></td></tr><tr><td>(d) All living things need air, food and water to survive.</td><td></td><td></td></tr></tbody></table>",
+"parts": [
+{
+"label": "",
+"letter": "a",
+"type": "tick",
+"marks": 2,
+"hint": "Put a tick in the correct column for each statement.",
+"tick": {
+"table": 0,
+"correct": {"0":0,"1":1,"2":1,"3":0}
+}
+}
+],
 "options": [],
 "myAnswer": "(a) True (b) False (c) False (d) True",
 "answer": "(Official): a) **True**  b) **False**  c) **False**  d) **True**",
@@ -15078,6 +15150,26 @@ window.QUESTIONS = [
 "difficulty": 4,
 "kw": "",
 "stem": "<p>Kim carried out an experiment to find out if mould needs light to grow. She sprinkled water on two slices of bread. Then she placed each slice into bags P and Q as shown.</p>\n<figure><img src=\"images/EOY_Raffles/q29_fig1.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(a) Which of the following condition(s) must be kept the same to ensure a fair experiment? Put a tick (✓) in the correct box(es). [1]</p>\n<table><tbody><tr><td>Condition</td><td>Kept the same</td></tr><tr><td>Type of bread</td><td></td></tr><tr><td>Presence of light</td><td></td></tr><tr><td>Amount of water on the bread</td><td></td></tr></tbody></table>\n<p>In another experiment, Kim wanted to find out if there would be moulds growing on a slice of toasted bread after a week. She toasted a slice of bread in an oven for three minutes under high heat. After the toasted bread had cooled down completely, she placed it into a sealed bag R as shown.</p>\n<figure><img src=\"images/EOY_Raffles/q29_fig2.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(b) Kim predicted that no mould would grow on this bread after a week. Do you agree? Explain why. [2]</p>",
+"parts": [
+{
+"label": "(a)",
+"letter": "a",
+"type": "tick",
+"marks": 1,
+"hint": "Tick the condition(s) that must be kept the same.",
+"tick": {
+"table": 0,
+"correct": [0,2]
+}
+},
+{
+"label": "(b)",
+"letter": "b",
+"type": "text",
+"marks": 2,
+"hint": "Do you agree with Kim? Explain why."
+}
+],
 "options": [],
 "myAnswer": "(a) Type of bread ✓；Amount of water on the bread ✓（Presence of light 是唯一被改变的条件，不打勾）\n  (b) 同意。霉菌生长需要 warmth、air 和 water；烘烤把面包里的水分去掉了，只有温度和空气，没有水，所以霉菌长不出来。",
 "answer": "(Official):\n  (a) **Type of bread**; **Amount of water on the bread**\n  (b) **Yes.** Mould needs **warmth, air and water**, but in this case the bread only has warmth and air inside it because **the toasting process removed the water**, so the mould will not grow on the bread.",
@@ -15601,6 +15693,33 @@ window.QUESTIONS = [
 "difficulty": 4,
 "kw": "",
 "stem": "<p>Mrs Gopal wanted to find out if the type of metal rod affects the strength of an electromagnet. She set up the experiment using metal rods, W, X, Y and Z separately as shown in the diagram.</p>\n<figure><img src=\"images/EOY_Raffles/q36_fig1.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>Mrs Gopal observed that the steel clip would start to be attracted by different types of metal rods at different distances. She recorded the distances in the table below.</p>\n<table><tbody><tr><td>Metal rod</td><td>Distance at which the steel clip would be attracted by the metal rods (cm)</td></tr><tr><td>W</td><td>8</td></tr><tr><td>X</td><td>6</td></tr><tr><td>Y</td><td>4</td></tr><tr><td>Z</td><td>-</td></tr></tbody></table>\n<p>Mrs Gopal observed that there was no interaction between the set-up and the steel clip when rod Z was used.</p>\n<p>(a) Put a tick (✓) next to the material(s) that was used to make metal rod Z. [1]</p>\n<table><tbody><tr><td>Material</td><td>Metal rod Z</td></tr><tr><td>Iron</td><td></td></tr><tr><td>Nickel</td><td></td></tr><tr><td>Copper</td><td></td></tr><tr><td>Cobalt</td><td></td></tr></tbody></table>\n<p>(b) State a reason for your answer in part (a). [1]</p>\n<p>Mrs Gopal wants to make an electromagnet to pick up as many steel nails as possible as shown in the diagram.</p>\n<figure><img src=\"images/EOY_Raffles/q36_fig2.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(c) Which metal rod, W, X, Y or Z, should she use? Explain why. [2]</p>",
+"parts": [
+{
+"label": "(a)",
+"letter": "a",
+"type": "tick",
+"marks": 1,
+"hint": "Tick the material used to make metal rod Z.",
+"tick": {
+"table": 1,
+"correct": [2]
+}
+},
+{
+"label": "(b)",
+"letter": "b",
+"type": "text",
+"marks": 1,
+"hint": "State a reason for your answer in (a)."
+},
+{
+"label": "(c)",
+"letter": "c",
+"type": "text",
+"marks": 2,
+"hint": "Which metal rod should she use? Explain why."
+}
+],
 "options": [],
 "myAnswer": "(a) Copper ✓\n  (b) 铜不是磁性材料，所以装置完全不吸引钢夹（no interaction）。\n  (c) 用 W；它在 8 cm 处就能吸住钢夹，说明磁性最强，能吸起最多的钢钉。",
 "answer": "(Official):\n  (a) **Copper**\n  (b) The set-up with Rod Z **did not attract the steel clip** as Z is made of copper which is a **non-magnetic material**.\n  (c) **W.** It **attracted the steel clip from the furthest distance** showing that it has the **most magnetic strength**, so Mrs Gopal should use W.",
@@ -23883,6 +24002,33 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>The diagram below shows parts A, B, C, D and E of the human digestive system.</p>\n<figure><img src=\"images/EOY_MGS/q28_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>A diagram of the digestive system: A points to the mouth, B to the oesophagus, C to the stomach, and D and E to the different parts of the intestine.</figcaption></figure>\n<p>(a) Which part(s) A, B, C, D and/or E, of the human digestive system produce(s) digestive juices? [1]<br>(b) Name the part of the digestive system which absorbs water from undigested food. [1]<br>(c) Put a tick (✓) in the correct boxes for the statements below. [1]</p>\n<table><tbody><tr><td>Statement</td><td>True</td><td>False</td></tr><tr><td>Food is fully digested in part C.</td><td></td><td></td></tr><tr><td>Digested food passes through the walls of part E.</td><td></td><td></td></tr></tbody></table>",
+"parts": [
+{
+"label": "(a)",
+"letter": "a",
+"type": "text",
+"marks": 1,
+"hint": "Which part(s) produce digestive juices?"
+},
+{
+"label": "(b)",
+"letter": "b",
+"type": "text",
+"marks": 1,
+"hint": "Name the part that absorbs water from undigested food."
+},
+{
+"label": "(c)",
+"letter": "c",
+"type": "tick",
+"marks": 1,
+"hint": "Tick True or False for each statement.",
+"tick": {
+"table": 0,
+"correct": {"0":1,"1":1}
+}
+}
+],
 "options": [],
 "myAnswer": "(a) A, C and D.\n  (b) Large intestine.\n  (c) Statement 1: False. Statement 2: False.",
 "answer": "(a) A, C and D.\n  (b) Large intestine.\n  (c) Both statements are False (ticks in the False column).",
@@ -27588,6 +27734,33 @@ window.QUESTIONS = [
 "difficulty": 4,
 "kw": "",
 "stem": "<p>3. Tom classified four plants into groups A and B.</p>\n<figure><img src=\"images/WA1_Raffles/q3_fig1.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(a) Fill in the correct headings for groups A and B. [2]</p>\n<table><tbody><tr><td></td><td></td></tr><tr><td>A</td><td></td></tr><tr><td>B</td><td></td></tr></tbody></table>\n<p>(b) Based on Tom's observations, he made the following statements about the characteristics of plants in groups A and B. Put a tick (✓) in the correct box for each statement below. [2]</p>\n<table><tbody><tr><td></td><td>Statements</td><td>True</td><td>False</td></tr><tr><td>(i)</td><td>The plants in both groups are land plants.</td><td></td><td></td></tr><tr><td>(ii)</td><td>The plants in both groups reproduce by seeds.</td><td></td><td></td></tr><tr><td>(iii)</td><td>The plants in group A can make its own food but plants in group B cannot.</td><td></td><td></td></tr><tr><td>(iv)</td><td>The plants in both groups have stems that allow them to stand upright on their own.</td><td></td><td></td></tr></tbody></table>\n<p>The diagram below shows a plant Tom had grown in a wooden box with a hole.</p>\n<figure><img src=\"images/WA1_Raffles/q3_fig2.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(c) Which characteristic of living things does the plant above show? [1]</p>",
+"parts": [
+{
+"label": "(a)",
+"letter": "a",
+"type": "text",
+"marks": 2,
+"hint": "Fill in the correct headings for groups A and B."
+},
+{
+"label": "(b)",
+"letter": "b",
+"type": "tick",
+"marks": 2,
+"hint": "Tick True or False for each statement.",
+"tick": {
+"table": 1,
+"correct": {"0":0,"1":1,"2":1,"3":1}
+}
+},
+{
+"label": "(c)",
+"letter": "c",
+"type": "text",
+"marks": 1,
+"hint": "Which characteristic of living things does the plant show?"
+}
+],
 "options": [],
 "myAnswer": "- (a) A: Plants that need support (climbing plants) / B: Plants that do not need support\n  - (b) (i) True (ii) False (iii) False (iv) False\n  - (c) Living things respond to changes around them (the plant grows towards the light).",
 "answer": "(Official):\n  - (a) A: Flowering plants; B: Non-flowering plants\n  - (b) True, false, false, false (0.5 mark each)\n  - (c) Living things respond to change around them.",
@@ -29391,6 +29564,26 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>James blows air into the party pipe which extends out as shown.</p>\n<p>(a) What is an important property that we must consider when we make parts X and Y of the party pipe? Place a tick (✓) in the correct box for each of the parts. [1]</p>\n<table><tbody><tr><td>Property</td><td>Part X</td><td>Part Y</td></tr><tr><td>Ability to sink or float</td><td></td><td></td></tr><tr><td>Flexibility</td><td></td><td></td></tr><tr><td>Transparency</td><td></td><td></td></tr><tr><td>Waterproof</td><td></td><td></td></tr></tbody></table>\n<p>(b) Explain why you chose the property in (a) for part Y. [1]</p>\n<figure><img src=\"images/WA2_ACSJ/q6_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>James blows a party pipe; the diagram on the right shows part X (the hard tube held in the mouth) and part Y (the coiled part that stretches out after blowing)</figcaption></figure>",
+"parts": [
+{
+"label": "(a)",
+"letter": "a",
+"type": "tick",
+"marks": 1,
+"hint": "Tick the important property for Part X and for Part Y.",
+"tick": {
+"table": 0,
+"correct": {"1":1,"3":0}
+}
+},
+{
+"label": "(b)",
+"letter": "b",
+"type": "text",
+"marks": 1,
+"hint": "Explain why you chose that property for part Y."
+}
+],
 "options": [],
 "myAnswer": "(a) Part X: Waterproof；Part Y: Flexibility\n  (b) When Part Y is not blown, it curls up. That shows that it is flexible（吹气时能伸展，说明它可弯曲，需柔韧性）.",
 "answer": "(a) Part Y: Flexibility；Part X: Waterproof\n  (b) When Part Y is not blown, it curls up. That shows that it is flexible.",
@@ -34448,6 +34641,26 @@ window.QUESTIONS = [
 "difficulty": 2,
 "kw": "",
 "stem": "<p>Alice placed a plant in a box. After a few days, she observed that the plant grew towards the hole as shown below.</p>\n<figure><img src=\"images/WA2_StNicholas/q16_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>A closed box with a small hole, in which the leaves and branches of a potted plant grow towards the hole.</figcaption></figure>\n<p>(a) Based on her observation, tick (√) the material that the box is made of. [1]</p>\n<table><tbody><tr><td>Material</td><td>Tick (√)</td></tr><tr><td>Glass</td><td></td></tr><tr><td>Cardboard</td><td></td></tr><tr><td>Clear plastic</td><td></td></tr></tbody></table>\n<p>(b) Explain your answer in (a). [1]</p>",
+"parts": [
+{
+"label": "(a)",
+"letter": "a",
+"type": "tick",
+"marks": 1,
+"hint": "Tick the material the box is made of.",
+"tick": {
+"table": 0,
+"correct": [1]
+}
+},
+{
+"label": "(b)",
+"letter": "b",
+"type": "text",
+"marks": 1,
+"hint": "Explain your answer in (a)."
+}
+],
 "options": [],
 "myAnswer": "(a) Cardboard。\n  (b) The cardboard is opaque. It does not allow light to pass through, so the plant could only receive light through the hole and grew towards the hole to get sunlight.",
 "answer": "(a) Cardboard\n  (b) Cardboard is opaque, plant grows towards the hole to get sunlight.",
@@ -34542,6 +34755,33 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>Rani wanted to find out if water is needed for seeds to germinate. She used the items shown below for her experiment.</p>\n<figure><img src=\"images/WA2_StNicholas/q18_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>Materials for the experiment: cotton wool, container A, container B, seeds, a beaker of water.</figcaption></figure>\n<p>She wrote down the first three steps of her experiment.<br>1. Place some cotton wool into containers A and B.<br>2. Put three seeds each into both containers.<br>3. Sprinkle some water daily into container A only.</p>\n<p>(a) In the table below, tick (√) the next step of her experiment. [1]</p>\n<table><tbody><tr><td>Next step</td><td>Tick (√)</td></tr><tr><td>Place both containers in a dark cupboard.</td><td></td></tr><tr><td>Place container A in a dark cupboard and container B in an open field.</td><td></td></tr></tbody></table>\n<p>After a few days, she observed that the seeds in only one of the containers germinated.</p>\n<p>(b) In which container A or B did the seeds not germinate? Explain your answer. [1]</p>\n<p>(c) Based on the results of her experiment, state two other conditions needed for seeds to germinate. [1]</p>",
+"parts": [
+{
+"label": "(a)",
+"letter": "a",
+"type": "tick",
+"marks": 1,
+"hint": "Tick the next step of her experiment.",
+"tick": {
+"table": 0,
+"correct": [0]
+}
+},
+{
+"label": "(b)",
+"letter": "b",
+"type": "text",
+"marks": 1,
+"hint": "In which container did the seeds not germinate? Explain why."
+},
+{
+"label": "(c)",
+"letter": "c",
+"type": "text",
+"marks": 1,
+"hint": "State two other conditions needed for seeds to germinate."
+}
+],
 "options": [],
 "myAnswer": "(a) 勾选 \"Place both containers in a dark cupboard.\"（其余条件须相同，只保留\"有无水\"一个变量）。\n  (b) Container B. It did not receive any water, and water is needed for seeds to germinate.\n  (c) Air (oxygen) and warmth.",
 "answer": "(a) Place both containers in a dark cupboard.\n  (b) B, because it does not have any water so B did not germinate.\n  (c) Oxygen and warmth are needed to germinate.",
@@ -35687,6 +35927,26 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>Judy observed plant M in her school garden as shown.</p>\n<figure><img src=\"images/WA3_ACSJ/q5_fig1.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(a) Tick (✓) the statement(s) that correctly describes plant M. [1]</p>\n<table><tbody><tr><td>Statement</td><td>Tick (✓)</td></tr><tr><td>(i) It is a flowering plant.</td><td></td></tr><tr><td>(ii) It reproduces from spores.</td><td></td></tr><tr><td>(iii) It has four stages in its life cycle.</td><td></td></tr></tbody></table>\n<p>(b) Name the stage of plant M. Give a reason for your answer. [1]</p>",
+"parts": [
+{
+"label": "(a)",
+"letter": "a",
+"type": "tick",
+"marks": 1,
+"hint": "Tick the statement(s) that correctly describe plant M.",
+"tick": {
+"table": 0,
+"correct": [0]
+}
+},
+{
+"label": "(b)",
+"letter": "b",
+"type": "text",
+"marks": 1,
+"hint": "Name the stage of plant M and give a reason."
+}
+],
 "options": [],
 "myAnswer": "(a) 只勾 **(i) It is a flowering plant.**\n  (b) Adult plant（成年植株）——因为它已经结出果实；开花植物能结果，说明它已长到成年阶段。",
 "answer": "(a) **(i) It is a flowering plant.** (only (i) is ticked)\n  (b) **Adult plant. It has fruits; as long as a flowering plant has fruits, it is at its adult stage.**",
