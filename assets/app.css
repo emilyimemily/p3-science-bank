@@ -242,6 +242,9 @@ select{
 .qstem figcaption{font-family:var(--ff);font-size:12.5px;color:var(--muted);margin-top:6px}
 
 .qanswer{margin-top:20px;border-top:1px solid var(--line);padding-top:18px}
+/* parted OEQ: the question text travels with its own answer box, so no divider */
+.qanswer.parted{margin-top:6px;border-top:none;padding-top:0}
+.qstem.intro-empty{display:none}
 .opts{display:flex;flex-direction:column;gap:9px}
 .optbtn{
   display:flex;gap:11px;align-items:flex-start;text-align:left;
@@ -277,6 +280,16 @@ textarea.answer:focus{outline:2px solid #bfe0d9;border-color:var(--accent)}
 /* ---- parted OEQ: one answer space per sub-question ---- */
 .partsanswers{display:flex;flex-direction:column;gap:16px;margin-top:4px}
 .partans{border:1px solid var(--line);border-radius:12px;padding:13px 15px;background:#fcfdfe}
+.partans.withstem{padding:15px 16px}
+/* the sub-question's real wording / figures / tables, kept directly above its box */
+.partstem{font-family:var(--ff-q);color:var(--ink)}
+.partstem>*:last-child{margin-bottom:0}
+.partstem p{margin:0 0 10px}
+.partstem table{margin:10px 0}
+.partstem figure{margin:10px 0}
+.partanswerlabel{display:flex;align-items:center;gap:8px;border-top:1px dashed var(--line);
+  margin:12px 0 9px;padding-top:10px;font-family:var(--ff);font-size:12px;font-weight:700;
+  letter-spacing:.02em;color:var(--accent-dark)}
 .partans .partlabel{font-weight:700;font-size:14.5px;color:var(--ink);display:flex;align-items:center;gap:8px}
 .partans .pmark{font-weight:600;font-size:11.5px;color:var(--accent-dark);background:var(--accent-soft);border-radius:6px;padding:1px 7px}
 .partans .parthint{font-size:12px;color:var(--muted);margin:5px 0 9px;line-height:1.5}
@@ -310,7 +323,7 @@ textarea.answer:focus{outline:2px solid #bfe0d9;border-color:var(--accent)}
 .qstem .tickinput:disabled{cursor:default;opacity:.85}
 .qstem td.tickbox.graded-ok{background:#eaf7f0;border-color:#9dd6b6}
 .qstem td.tickbox.graded-miss{background:#fdf0ef;border-color:#eeb6b2}
-.qstem.locked .tickcell{cursor:default}
+.qstem.locked .tickcell,.qanswer.locked .tickcell{cursor:default}
 .ticktag{background:#eef2fb;border-color:#dae3f8;color:#2b4c8c}
 
 /* feedback: group keyword chips by sub-part */

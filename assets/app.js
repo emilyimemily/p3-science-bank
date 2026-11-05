@@ -344,7 +344,8 @@
   }
 
   function injectTickInputs(q, parts, rec) {
-    const stemTables = Array.from(document.querySelectorAll("#qstem table"));
+    // tables may live in the intro stem or inside a sub-question card, in document order
+    const stemTables = Array.from(document.querySelectorAll("#qstem table, #qanswer .partstem table"));
     parts.filter(p => p.type === "tick").forEach(p => {
       const spec = tickSpecFor(q, p);
       if (!spec) return;
@@ -390,7 +391,7 @@
   function readTickInputs(parts) {
     const out = {};
     parts.filter(p => p.type === "tick").forEach(p => { out[p.letter] = {}; });
-    document.querySelectorAll("#qstem input.tickinput").forEach(inp => {
+    document.querySelectorAll("#qstem input.tickinput, #qanswer input.tickinput").forEach(inp => {
       if (!inp.checked) return;
       const L = inp.dataset.tickpart;
       if (!out[L]) out[L] = {};
@@ -480,15 +481,41 @@
     return { score: Math.min(roundHalf(score), q.marks), res, manual, auto: true, partScores, drawParts: [], tickOk };
   }
 
+  /* Genuine (a)(b)(c) sub-question labels only. Rejects "(g)" in "mass (g)",
+     "(b)" cited in "stated in (b)", "box a)" in a caption, and repeated letters.
+     Without this, a question could render a duplicate card and cap full marks. */
+  function partLabelIndexes(stem) {
+    const re = /\(?([a-z])\)/g;
+    let m; const out = []; let expect = 0;   // expect a, then b, then c …
+    // "(i)"/"(a)" inside a table row or a figure caption is an option label,
+    // not a sub-question — never split on those.
+    const ranges = [];
+    const blockRe = /<(table|figure|figcaption)\b[^>]*>[\s\S]*?<\/\1>/gi;
+    let bm;
+    while ((bm = blockRe.exec(stem))) ranges.push([bm.index, bm.index + bm[0].length]);
+    const inBlock = i => ranges.some(r => i >= r[0] && i < r[1]);
+    while ((m = re.exec(stem))) {
+      const L = m[1];
+      const pre = m.index > 0 ? stem[m.index - 1] : " ";
+      if (/[a-z0-9]/i.test(pre)) continue;          // skip things like "e.g.)"
+      if (inBlock(m.index)) continue;
+      // A label starts a line when what precedes it is a tag, punctuation,
+      // a bullet or a blank line — never when it follows a word ("stated in (b)").
+      const tail = stem.slice(0, m.index).replace(/\s+$/, "");
+      const lineStart = tail === "" || !/[a-z0-9]/i.test(tail.slice(-1));
+      if (!lineStart) continue;
+      const k = L.charCodeAt(0) - 97;
+      if (k !== expect) continue;                   // rejects "(i)" options and repeated "(a)"
+      out.push({ letter: L, index: m.index });
+      expect = k + 1;
+    }
+    return out;
+  }
+
   function getQuestionParts(q) {
     if (Array.isArray(q.parts) && q.parts.length) return q.parts;
     const stem = q.stem || "";
-    const re = /\(?([a-z])\)/g; let m; const idx = [];
-    while ((m = re.exec(stem))) {
-      const pre = m.index > 0 ? stem[m.index - 1] : " ";
-      if (/[a-z0-9]/i.test(pre)) continue;          // skip things like "e.g.)"
-      idx.push([m[1], m.index]);
-    }
+    const idx = partLabelIndexes(stem).map(x => [x.letter, x.index]);
     if (idx.length < 2) return null;                // single-part -> keep one box
     const segs = [];
     for (let k = 0; k < idx.length; k++) {
@@ -544,6 +571,103 @@
     return { score: Math.min(score, q.marks), res, manual: res.filter(r => r.manual), auto: true, partScores, drawParts };
   }
 
+  /* ---------------- interleave sub-questions with their answer boxes ----------------
+     The stem is one HTML blob. Split it at the (a)/(b)/(c) labels using real DOM
+     nodes (never raw string offsets) so <p>, <br>, <figure> and <table> markup
+     stays well formed. Each slice is then rendered inside the card that holds
+     that sub-question's answer widget. If a stem cannot be split safely, return
+     null and the caller keeps the original layout. */
+  function splitStemForParts(stemHTML, parts) {
+    const letters = parts.map(p => p.letter);
+    const host = document.createElement("div");
+    host.innerHTML = stemHTML;
+    const markRe = /\(?([a-z])\)/g;
+    let expect = 0;                 // shared across all blocks: a, then b, then c…
+
+    function findMarkers(el) {
+      const out = [];
+      const walker = document.createTreeWalker(el, 4 /* NodeFilter.SHOW_TEXT */);
+      let n;
+      while ((n = walker.nextNode())) {
+        const t = n.nodeValue || "";
+        markRe.lastIndex = 0;
+        let m;
+        while ((m = markRe.exec(t))) {
+          const L = m[1];
+          if (L !== letters[expect]) continue;            // strict a → b → c order
+          const pre = m.index > 0 ? t[m.index - 1] : " ";
+          if (/[a-z0-9]/i.test(pre)) continue;             // e.g. "e.g.)"
+          const before = t.slice(0, m.index).replace(/\s+$/, "");
+          const atStart = m.index === 0 || before === "" || !/[a-z0-9]/i.test(before.slice(-1));
+          if (!atStart) continue;                         // ignore "(a)" cited mid-sentence
+          out.push({ letter: L, node: n, offset: m.index });
+          expect++;
+        }
+      }
+      return out;
+    }
+
+    function explode(block, markers) {
+      const pieces = [];
+      for (let i = markers.length - 1; i >= 0; i--) {
+        const mk = markers[i];
+        const r = document.createRange();
+        try { r.selectNodeContents(block); r.setStart(mk.node, mk.offset); }
+        catch (e) { continue; }
+        const frag = r.extractContents();
+        const clone = document.createElement(block.tagName.toLowerCase());
+        Array.from(block.attributes).forEach(a => clone.setAttribute(a.name, a.value));
+        clone.appendChild(frag);
+        while (clone.firstChild && clone.firstChild.nodeName === "BR") clone.removeChild(clone.firstChild);
+        while (clone.lastChild && clone.lastChild.nodeName === "BR") clone.removeChild(clone.lastChild);
+        pieces.unshift({ node: clone, letter: mk.letter });
+      }
+      while (block.lastChild && block.lastChild.nodeName === "BR") block.removeChild(block.lastChild);
+      const keep = (block.textContent || "").trim() || block.querySelector("img,table,figure,input,svg");
+      if (keep) pieces.unshift({ node: block.cloneNode(true), letter: null });
+      return pieces;
+    }
+
+    const expanded = [];
+    Array.from(host.childNodes).forEach(node => {
+      const el = node.nodeType === 1 ? node : null;
+      if (el && /^(P|DIV|LI|BLOCKQUOTE|H[1-6]|SECTION)$/.test(el.tagName)
+        && !el.querySelector("table,figure")) {
+        const markers = findMarkers(el);
+        if (markers.length) {
+          const pieces = explode(el, markers);
+          const frag = document.createDocumentFragment();
+          pieces.forEach(pc => frag.appendChild(pc.node));
+          const parent = el.parentNode;
+          parent.insertBefore(frag, el);
+          parent.removeChild(el);
+          pieces.forEach(pc => expanded.push(pc));
+          return;
+        }
+      }
+      expanded.push({ node, letter: null });
+    });
+
+    const ser = n => {
+      const d = document.createElement("div");
+      d.appendChild(n.cloneNode(true));
+      return d.innerHTML;
+    };
+    const seg = {}; letters.forEach(l => seg[l] = []);
+    const intro = [];
+    let cur = null;
+    expanded.forEach(({ node, letter }) => {
+      if (letter && letters.indexOf(letter) >= (cur ? letters.indexOf(cur) : -1)) cur = letter;
+      const html = ser(node);
+      if (!html) return;
+      (cur ? seg[cur] : intro).push(html);
+    });
+    const byLetter = {};
+    letters.forEach(l => byLetter[l] = seg[l].join(""));
+    if (letters.some(l => !byLetter[l].trim())) return null;   // not safe → legacy layout
+    return { intro: intro.join(""), byLetter };
+  }
+
   function initCanvas(cv) {
     const ctx = cv.getContext && cv.getContext("2d");
     if (!ctx) return;
@@ -571,34 +695,47 @@
     const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, cv.width, cv.height); img.src = url;
   }
 
-  function renderPartedOEQ(q, parts, rec) {
+  function renderPartedOEQ(q, parts, rec, split) {
     const isRec = !!(rec && rec.type === "OEQ" && rec.parts);
     oeqState = { parts: {}, canvases: {}, ticks: {} };
     const box = $("#qanswer");
     let html = `<div class="partsanswers">`;
     parts.forEach(p => {
-      html += `<div class="partans" data-part="${p.letter}">`;
-      if (p.label) html += `<div class="partlabel">${esc(p.label)} ${p.marks ? `<span class="pmark">${p.marks} mark${p.marks > 1 ? "s" : ""}</span>` : ""}</div>`;
-      if (p.hint) html += `<div class="parthint">${esc(p.hint.slice(0, 160))}</div>`;
-      if (p.type === "tick") {
-        html += `<div class="tickhint">Tick the boxes in the table above — no written answer needed here.</div>`;
-      } else if (p.type === "draw") {
-        html += `<div class="canvaswrap">
-            <canvas class="drawcanvas" data-part="${p.letter}" width="600" height="200"></canvas>
-            <button type="button" class="btn sm clearcanvas" data-part="${p.letter}">Clear drawing</button>
-          </div>
-          <textarea class="ans note" data-part="${p.letter}" placeholder="Add labels or notes for your drawing…"></textarea>`;
-      } else if (p.type === "blank") {
-        html += `<div class="blankwrap"><input class="ans blank" data-part="${p.letter}" placeholder="your answer" autocomplete="off"><span class="unit">${esc(p.unit || "")}</span></div>`;
+      // The sub-question's own wording, figures and tables now live inside its
+      // answer card, immediately above the widget — no scrolling back up.
+      const seg = (split && split.byLetter[p.letter]) || "";
+      const markTag = p.marks ? `<span class="pmark">${p.marks} mark${p.marks > 1 ? "s" : ""}</span>` : "";
+      html += `<div class="partans${seg ? " withstem" : ""}" data-part="${p.letter}">`;
+      if (seg) {
+        html += `<div class="partstem qstem" data-part="${p.letter}">${seg}</div>`;
       } else {
-        html += `<textarea class="ans" data-part="${p.letter}" placeholder="Write your answer for ${esc(p.label)}…"></textarea>`;
+        if (p.label) html += `<div class="partlabel">${esc(p.label)} ${markTag}</div>`;
+        if (p.hint) html += `<div class="parthint">${esc(p.hint.slice(0, 160))}</div>`;
+      }
+      if (p.type === "tick") {
+        html += seg
+          ? `<div class="tickhint">Tick the correct boxes in the table — no written answer needed.</div>`
+          : `<div class="tickhint">Tick the boxes in the table above — no written answer needed here.</div>`;
+      } else {
+        if (seg) html += `<div class="partanswerlabel">Your answer ${markTag}</div>`;
+        if (p.type === "draw") {
+          html += `<div class="canvaswrap">
+              <canvas class="drawcanvas" data-part="${p.letter}" width="600" height="200"></canvas>
+              <button type="button" class="btn sm clearcanvas" data-part="${p.letter}">Clear drawing</button>
+            </div>
+            <textarea class="ans note" data-part="${p.letter}" placeholder="Add labels or notes for your drawing…"></textarea>`;
+        } else if (p.type === "blank") {
+          html += `<div class="blankwrap"><input class="ans blank" data-part="${p.letter}" placeholder="your answer" autocomplete="off"><span class="unit">${esc(p.unit || "")}</span></div>`;
+        } else {
+          html += `<textarea class="ans" data-part="${p.letter}" placeholder="Write your answer for ${esc(p.label)}…"></textarea>`;
+        }
       }
       html += `</div>`;
     });
     html += `</div>`;
     const hasTicks = parts.some(p => p.type === "tick");
-    html += `<div class="structhint"><span>${hasTicks ? "Tick the boxes above" : "One box per (a)(b)(c)"}</span><span>Hit the keywords</span><span>Submit</span></div>`;
-    html += `<p class="answerhint">${hasTicks ? "Tick the correct boxes in the question table, and write answers only for the other sub-questions. Ticked boxes are graded automatically." : "Each sub-question has its own answer space. Drawing parts are graded by you afterwards; the rest are checked against the scoring keywords."}</p>`;
+    html += `<div class="structhint"><span>${hasTicks ? "Tick the boxes" : "One box per (a)(b)(c)"}</span><span>${split ? "Answer under each question" : "Hit the keywords"}</span><span>Submit</span></div>`;
+    html += `<p class="answerhint">${split ? "Each sub-question is followed immediately by its own answer space. " : "Each sub-question has its own answer space. "}${hasTicks ? "Tick the correct boxes in the table; written parts are checked against the scoring keywords." : "Drawing parts are graded by you afterwards; the rest are checked against the scoring keywords."}</p>`;
     box.innerHTML = html;
     if (hasTicks) injectTickInputs(q, parts, isRec ? rec : null);
 
@@ -759,8 +896,9 @@
     if (!q) return;
     curQ = q;
     dragCarry = null;
-    const _lk = document.getElementById("qstem"); if (_lk) _lk.classList.remove("locked");
+    const _lk = document.getElementById("qstem"); if (_lk) _lk.classList.remove("locked", "intro-empty");
     const _dp = document.getElementById("dragpool"); if (_dp) _dp.classList.remove("locked");
+    const _ab = document.getElementById("qanswer"); if (_ab) _ab.classList.remove("locked", "parted");
     const rec = S.recs[q.id];
 
     $("#progText").textContent = `${S.i + 1} / ${S.ids.length}`;
@@ -796,7 +934,17 @@
       stem = stem + `<div class="tfwrap">${tfList}</div>`;
     }
     lineState = { edges: [], pending: null };
-    $("#qstem").innerHTML = stem;
+
+    // For multi-part OEQ, cut the stem at its (a)(b)(c) labels: the shared
+    // introduction stays on top and each sub-question moves into its own card.
+    const _qparts = (q.type !== "MCQ" && !isSlot && !isLine && !isTF) ? getQuestionParts(q) : null;
+    const _parted = !!(_qparts && (_qparts.length >= 2 || _qparts.some(p => p.type === "tick")));
+    const _split = _parted ? splitStemForParts(stem, _qparts) : null;
+    $("#qstem").innerHTML = _split ? _split.intro : stem;
+    if (_split) {
+      if (!_split.intro.trim()) $("#qstem").classList.add("intro-empty");
+      $("#qanswer").classList.add("parted");
+    }
 
     // answer area
     const box = $("#qanswer");
@@ -886,9 +1034,9 @@
         });
       }
     } else {
-      const parts = getQuestionParts(q);
-      if (parts && (parts.length >= 2 || parts.some(p => p.type === "tick"))) {
-        renderPartedOEQ(q, parts, rec);
+      const parts = _qparts || getQuestionParts(q);
+      if (_parted) {
+        renderPartedOEQ(q, parts, rec, _split);
       } else {
         box.innerHTML = `
           <textarea class="answer" id="oeqInput" placeholder="Answer in complete English sentences. Use (a)(b)(c) for sub-questions…"></textarea>
