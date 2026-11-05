@@ -310,6 +310,291 @@
   // a widget per part. Single-part OEQ questions keep the original one-box layout.
   let oeqState = { parts: {}, canvases: {}, ticks: {} };
 
+  /* ---------------- answer ON the diagram ----------------
+     Several papers ask the pupil to write a letter / word / tick INSIDE a
+     picture ("write S inside the circle"), or to draw arrows straight onto a
+     diagram. A textarea under the question cannot say WHERE on the picture
+     the answer goes, so the figure itself becomes the answer sheet: tap it
+     to drop a small text box, or switch to draw / arrow mode and sketch on
+     top of the image. Boxes and strokes are saved with the attempt so the
+     review shows them in exactly the same positions. */
+  let figState = { boxes: {}, strokes: [], mode: "label", activePart: "", wrap: null, nextId: 1, rec: false };
+  let figDragBox = null, figStroke = null;
+  const isParted = parts => !!(parts && (parts.length >= 2 || parts.some(p => p.type === "tick" || p.fig)));
+
+  function injectFigureOverlay(html, q) {
+    const fa = q.figAnswer;
+    if (!fa) return html;
+    const figs = []; const re = /<figure>([\s\S]*?)<\/figure>/g; let m;
+    while ((m = re.exec(html))) figs.push(m[0]);
+    if (!figs.length) return html;
+    const idx = (typeof fa.fig === "number") ? fa.fig : figs.length - 1;
+    const fig = figs[idx]; if (!fig) return html;
+    const imgM = fig.match(/<img\s[^>]*>/); if (!imgM) return html;
+    const svg = '<svg class="figsvg" viewBox="0 0 100 100" preserveAspectRatio="none"><defs><marker id="figarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#c0392b"></path></marker></defs><g class="figink"></g></svg>';
+    const layer = '<span class="figlayer"></span><span class="figtip">＋ Click the picture to place an answer box</span>';
+    const wrapped = `<span class="diagwrap figans" data-fig="${idx}">${imgM[0]}${svg}${layer}</span>`;
+    return html.replace(fig, fig.replace(imgM[0], wrapped));
+  }
+
+  function figPct(e, wrap) {
+    const r = wrap.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    const cx = t.clientX == null ? 0 : t.clientX, cy = t.clientY == null ? 0 : t.clientY;
+    return [Math.max(0, Math.min(100, (cx - r.left) / (r.width || 1) * 100)),
+            Math.max(0, Math.min(100, (cy - r.top) / (r.height || 1) * 100))];
+  }
+
+  function figBoxesFlat() {
+    return Object.keys(figState.boxes).reduce((a, L) => a.concat(figState.boxes[L] || []), []);
+  }
+
+  function renderFigChips() {
+    $$("#qanswer .figchips").forEach(box => {
+      const L = box.dataset.part;
+      const items = (figState.boxes[L] || []).filter(b => String(b.value || "").trim());
+      const preset = (figState.boxes[L] || []).some(b => b.preset);
+      box.innerHTML = items.length
+        ? items.map(b => `<span class="figchip">(${esc(L)}) ${esc(b.value)}</span>`).join("")
+        : (preset
+          ? `<span class="muted" style="font-size:12px">Type your answer in the box marked (${esc(L)}) on the picture above</span>`
+          : '<span class="muted" style="font-size:12px">Click the picture to place an answer box</span>');
+    });
+  }
+
+  function addFigBox(spec) {
+    const wrap = figState.wrap; if (!wrap) return null;
+    const layer = wrap.querySelector(".figlayer"); if (!layer) return null;
+    const part = spec.part || figState.activePart || "a";
+    const box = {
+      id: spec.id || ("b" + (figState.nextId++)),
+      boxId: spec.boxId || null,
+      part: part,
+      x: Math.max(0, Number(spec.x) || 0), y: Math.max(0, Number(spec.y) || 0),
+      w: Number(spec.w) || 9, h: Number(spec.h) || 9,
+      value: String(spec.value == null ? "" : spec.value),
+      preset: !!spec.preset, keyword: spec.keyword || "",
+      ph: spec.ph || "", el: null, input: null
+    };
+    const el = document.createElement("span");
+    el.className = "figbox" + (box.preset ? " preset" : "");
+    el.dataset.id = box.id; el.dataset.part = part;
+    if (box.boxId) el.dataset.boxid = box.boxId;
+    el.style.left = box.x + "%"; el.style.top = box.y + "%";
+    el.style.width = box.w + "%"; el.style.height = box.h + "%";
+    const bar = document.createElement("span"); bar.className = "figbar";
+    bar.innerHTML = `<span class="figtag">(${esc(part)})</span><button type="button" class="figdel" aria-label="Remove this box">×</button>`;
+    const inp = document.createElement("input");
+    inp.type = "text"; inp.className = "figinput"; inp.maxLength = 24;
+    inp.setAttribute("autocomplete", "off");
+    inp.placeholder = box.ph || "…"; inp.value = box.value;
+    el.appendChild(bar); el.appendChild(inp); layer.appendChild(el);
+    box.el = el; box.input = inp;
+    (figState.boxes[part] = figState.boxes[part] || []).push(box);
+    el.addEventListener("click", ev => ev.stopPropagation());
+    if (figState.rec) { inp.readOnly = true; el.classList.add("locked"); }
+    else {
+      inp.addEventListener("input", () => { box.value = inp.value; renderFigChips(); });
+      bar.querySelector(".figdel").addEventListener("click", ev => {
+        ev.stopPropagation(); removeFigBox(box);
+      });
+      const beginDrag = ev => {
+        if (figState.rec) return;
+        const t = ev.touches ? ev.touches[0] : ev;
+        if (!t) return;
+        const r = wrap.getBoundingClientRect();
+        figDragBox = { box: box, sx: t.clientX, sy: t.clientY, ox: box.x, oy: box.y,
+          w: r.width || 1, h: r.height || 1 };
+        el.classList.add("dragging");
+        if (ev.cancelable) ev.preventDefault();
+      };
+      bar.addEventListener("mousedown", beginDrag);
+      bar.addEventListener("touchstart", beginDrag, { passive: false });
+    }
+    renderFigChips();
+    return box;
+  }
+
+  function removeFigBox(box) {
+    const arr = figState.boxes[box.part] || [];
+    const i = arr.indexOf(box); if (i >= 0) arr.splice(i, 1);
+    if (box.el && box.el.parentNode) box.el.parentNode.removeChild(box.el);
+    renderFigChips();
+  }
+
+  function renderFigInk() {
+    const wrap = figState.wrap; if (!wrap) return;
+    const ink = wrap.querySelector(".figink"); if (!ink) return;
+    ink.innerHTML = "";
+    (figState.strokes || []).forEach(s => {
+      let el;
+      if (s.type === "arrow") {
+        el = document.createElementNS(SVGNS, "line");
+        el.setAttribute("x1", s.x1); el.setAttribute("y1", s.y1);
+        el.setAttribute("x2", s.x2); el.setAttribute("y2", s.y2);
+        el.setAttribute("marker-end", "url(#figarrow)");
+      } else {
+        el = document.createElementNS(SVGNS, "polyline");
+        el.setAttribute("points", (s.pts || []).map(p => p[0] + "," + p[1]).join(" "));
+      }
+      el.setAttribute("class", "figstroke");
+      ink.appendChild(el);
+    });
+  }
+
+  function setFigMode(mode) {
+    figState.mode = mode;
+    const wrap = figState.wrap; if (!wrap) return;
+    wrap.classList.toggle("drawmode", mode !== "label");
+    wrap.classList.toggle("labelmode", mode === "label");
+    $$("#qanswer .figmode").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+    const tip = wrap.querySelector(".figtip");
+    if (tip) tip.textContent = mode === "label"
+      ? "＋ Click the picture to place an answer box"
+      : (mode === "arrow" ? "↗ Drag on the picture to draw an arrow" : "✎ Draw on the picture");
+  }
+
+  function syncFigValues() {
+    figBoxesFlat().forEach(b => { if (b.input) b.value = b.input.value; });
+  }
+  function serializeFigBoxes() {
+    const out = {};
+    Object.keys(figState.boxes).forEach(L => {
+      out[L] = (figState.boxes[L] || []).map(b => ({
+        id: b.id, boxId: b.boxId, part: b.part, x: b.x, y: b.y, w: b.w, h: b.h,
+        value: b.value, preset: b.preset, keyword: b.keyword
+      }));
+    });
+    return out;
+  }
+  function figTextFor(part) {
+    return (figState.boxes[part] || []).map(b => {
+      const v = String(b.value || "").trim();
+      if (!v) return "";
+      return b.keyword ? (b.keyword + " " + v) : v;
+    }).filter(Boolean).join("; ");
+  }
+
+  function initFigureOverlay(q, parts, rec) {
+    const fa = q.figAnswer; if (!fa) return;
+    const wrap = document.querySelector("#qstem .diagwrap.figans, #qanswer .diagwrap.figans");
+    if (!wrap) return;
+    const fp = (parts || []).filter(p => p.fig);
+    const hasDraw = fp.some(p => p.fig === "draw");
+    figState = { boxes: {}, strokes: [], mode: hasDraw ? "draw" : "label",
+      activePart: (fp.find(p => p.fig === "text") || fp[0] || {}).letter || "a",
+      wrap: wrap, nextId: 1, rec: !!rec };
+    figDragBox = null; figStroke = null;
+    // pre-placed boxes already show where to write — the floating tip would
+    // only cover the picture, so keep it for click-to-add questions only
+    if ((fa.boxes || []).length) wrap.classList.add("withpreset");
+    const saved = (rec && rec.figBoxes) || null;
+    (fa.boxes || []).forEach((b, i) => {
+      const bid = b.id || ("p" + i);
+      const sv = saved ? (saved[b.part] || []).find(s => s.boxId === bid || s.id === bid) : null;
+      addFigBox({ id: bid, boxId: bid, part: b.part, x: b.x, y: b.y, w: b.w, h: b.h,
+        value: sv ? sv.value : "", preset: true, keyword: b.keyword, ph: b.ph });
+    });
+    if (saved) {
+      Object.keys(saved).forEach(L => (saved[L] || []).filter(s => !s.preset).forEach(s =>
+        addFigBox({ id: s.id, part: L, x: s.x, y: s.y, w: s.w, h: s.h,
+          value: s.value, keyword: s.keyword })));
+    }
+    figState.strokes = (rec && rec.figStrokes) ? rec.figStrokes.slice() : [];
+    renderFigInk();
+    setFigMode(figState.mode);
+
+    const layer = wrap.querySelector(".figlayer");
+    const svg = wrap.querySelector(".figsvg");
+    if (layer && !rec) layer.addEventListener("click", ev => {
+      if (figState.mode !== "label") return;
+      if (ev.target.closest && ev.target.closest(".figbox")) return;
+      const p = figPct(ev, wrap);
+      const nb = addFigBox({ x: Math.max(0, p[0] - 4.5), y: Math.max(0, p[1] - 4),
+        w: 9, h: 8, part: figState.activePart });
+      if (nb && nb.input) nb.input.focus();
+    });
+    if (svg && !rec) {
+      const down = ev => {
+        if (figState.mode === "label") return;
+        const p = figPct(ev, wrap);
+        figStroke = figState.mode === "arrow"
+          ? { type: "arrow", x1: p[0], y1: p[1], x2: p[0], y2: p[1] }
+          : { type: "line", pts: [p] };
+        if (ev.cancelable) ev.preventDefault();
+      };
+      svg.addEventListener("mousedown", down);
+      svg.addEventListener("touchstart", ev => {
+        if (ev.touches && ev.touches[0]) down(ev);
+      }, { passive: false });
+    }
+
+    $$("#qanswer .figadd").forEach(btn => btn.addEventListener("click", () => {
+      if (rec) return;
+      const L = btn.dataset.part;
+      figState.activePart = L; setFigMode("label");
+      const nb = addFigBox({ x: 42, y: 45, w: 12, h: 9, part: L });
+      if (nb && nb.input) nb.input.focus();
+    }));
+    $$("#qanswer .figclearboxes").forEach(btn => btn.addEventListener("click", () => {
+      if (rec) return;
+      (figState.boxes[btn.dataset.part] || []).slice().forEach(removeFigBox);
+    }));
+    $$("#qanswer .figmode").forEach(btn => btn.addEventListener("click", () => {
+      if (rec) return; setFigMode(btn.dataset.mode);
+    }));
+    $$("#qanswer .figclearstroke").forEach(btn => btn.addEventListener("click", () => {
+      if (rec) return;
+      figState.strokes = []; figStroke = null; renderFigInk();
+    }));
+    if (rec) $$("#qanswer .figpanel button").forEach(b => b.disabled = true);
+    renderFigChips();
+  }
+
+  // Global drag / freehand handlers (installed once). They only act while a
+  // figure answer sheet is on screen and unlocked.
+  function figPointerMove(e) {
+    const t = e.touches ? e.touches[0] : e;
+    if (!t) return;
+    if (figDragBox) {
+      const g = figDragBox;
+      g.box.x = Math.max(0, Math.min(100 - g.box.w, g.ox + (t.clientX - g.sx) / g.w * 100));
+      g.box.y = Math.max(0, Math.min(100 - g.box.h, g.oy + (t.clientY - g.sy) / g.h * 100));
+      g.box.el.style.left = g.box.x + "%"; g.box.el.style.top = g.box.y + "%";
+      if (e.cancelable) e.preventDefault();
+      return;
+    }
+    if (figStroke && figState.wrap) {
+      const p = figPct(e, figState.wrap);
+      if (figStroke.type === "arrow") { figStroke.x2 = p[0]; figStroke.y2 = p[1]; }
+      else {
+        const last = figStroke.pts[figStroke.pts.length - 1];
+        if (Math.abs(p[0] - last[0]) + Math.abs(p[1] - last[1]) > 0.5) figStroke.pts.push(p);
+      }
+      figState.strokes = figState.strokes.filter(s => !s._live);
+      const live = { _live: true, type: figStroke.type };
+      if (figStroke.type === "line") live.pts = figStroke.pts.slice();
+      else { live.x1 = figStroke.x1; live.y1 = figStroke.y1; live.x2 = figStroke.x2; live.y2 = figStroke.y2; }
+      figState.strokes.push(live);
+      renderFigInk();
+      if (e.cancelable) e.preventDefault();
+    }
+  }
+  function figPointerUp() {
+    if (figDragBox) { figDragBox.box.el.classList.remove("dragging"); figDragBox = null; }
+    if (figStroke) {
+      figState.strokes = figState.strokes.filter(s => !s._live);
+      figState.strokes.push(figStroke.type === "line"
+        ? { type: "line", pts: figStroke.pts.slice() }
+        : { type: "arrow", x1: figStroke.x1, y1: figStroke.y1, x2: figStroke.x2, y2: figStroke.y2 });
+      figStroke = null; renderFigInk();
+    }
+  }
+  document.addEventListener("mousemove", figPointerMove);
+  document.addEventListener("mouseup", figPointerUp);
+  document.addEventListener("touchmove", figPointerMove, { passive: false });
+  document.addEventListener("touchend", figPointerUp);
+
   /* A "tick the correct box(es)" part renders its options straight into the
      question's own table (the column headed "Keep the same" / "Tick (√)" /
      "True | False"). We read the table from the stem so the widget sits exactly
@@ -513,34 +798,120 @@
   }
 
   function getQuestionParts(q) {
-    if (Array.isArray(q.parts) && q.parts.length) return q.parts;
-    const stem = q.stem || "";
-    const idx = partLabelIndexes(stem).map(x => [x.letter, x.index]);
-    if (idx.length < 2) return null;                // single-part -> keep one box
-    const segs = [];
-    for (let k = 0; k < idx.length; k++) {
-      const s = idx[k][1];
-      const e = k + 1 < idx.length ? idx[k + 1][1] : stem.length;
-      segs.push({ letter: idx[k][0], text: stem.slice(s, e) });
+    let parts;
+    if (Array.isArray(q.parts) && q.parts.length) {
+      parts = q.parts.map(p => Object.assign({}, p));
+    } else {
+      const stem = q.stem || "";
+      const idx = partLabelIndexes(stem).map(x => [x.letter, x.index]);
+      if (idx.length < 2) {
+        // A picture-fill question with no (a)(b) labels still needs its own
+        // answer widget (on the image) rather than the generic textarea.
+        if (!(q.figAnswer && q.figAnswer.single)) return null;
+        parts = [{ label: "", letter: "a", type: "text", marks: q.marks, unit: "", hint: "" }];
+      } else {
+        const segs = [];
+        for (let k = 0; k < idx.length; k++) {
+          const s = idx[k][1];
+          const e = k + 1 < idx.length ? idx[k + 1][1] : stem.length;
+          segs.push({ letter: idx[k][0], text: stem.slice(s, e) });
+        }
+        const types = segs.map(s => {
+          const t = s.text.toLowerCase();
+          if (/\b(draw|drawing|sketch|shade)\b/.test(t) && !/\bdraw (a|an) (conclusion|conclusions|inference)\b/.test(t)) return "draw";
+          if (/_{2,}|_{3,}\s*[A-Za-z%°\u00b0]|____/.test(s.text)) return "blank";
+          return "text";
+        });
+        const plan = window.QBGrade.allocateMarks(q.marks, segs.length);
+        parts = segs.map((s, k) => {
+          const unit = (s.text.match(/_{2,}\s*([A-Za-z%°\u00b0]+)/) || [])[1] || "";
+          const hint = s.text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+          return { label: "(" + s.letter + ")", letter: s.letter, type: types[k], marks: plan[k] || 0, unit, hint: hint.slice(0, 150) };
+        });
+      }
     }
-    const types = segs.map(s => {
-      const t = s.text.toLowerCase();
-      if (/\b(draw|drawing|sketch|shade)\b/.test(t) && !/\bdraw (a|an) (conclusion|conclusions|inference)\b/.test(t)) return "draw";
-      if (/_{2,}|_{3,}\s*[A-Za-z%°\u00b0]|____/.test(s.text)) return "blank";
-      return "text";
+    const fp = (q.figAnswer && q.figAnswer.parts) || {};
+    parts.forEach(p => {
+      if (!fp[p.letter]) return;
+      p.fig = fp[p.letter];
+      if (p.fig === "draw" && p.type !== "tick") p.type = "draw";
     });
-    const plan = window.QBGrade.allocateMarks(q.marks, segs.length);
-    return segs.map((s, k) => {
-      const unit = (s.text.match(/_{2,}\s*([A-Za-z%°\u00b0]+)/) || [])[1] || "";
-      const hint = s.text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-      return { label: "(" + s.letter + ")", letter: s.letter, type: types[k], marks: plan[k] || 0, unit, hint: hint.slice(0, 150) };
+    return parts;
+  }
+
+  /* Exact grading for "write the letter X inside this part of the picture".
+     Keyword grading cannot see WHERE a label was put, and a pupil who writes
+     "S" in the right circle would otherwise score nothing. Each pre-placed
+     box carries the expected text; the mark is awarded only when a box with
+     that id still sits inside its zone and holds the right answer. */
+  function figExpectOk(value, expect) {
+    if (Array.isArray(expect)) return expect.some(e => figExpectOk(value, e));
+    const v = String(value || "").trim().toLowerCase();
+    const e = String(expect == null ? "" : expect).trim().toLowerCase();
+    if (e === "") return !v;                       // box that must be left blank
+    if (!v) return false;
+    const tick = s => /^[✓√]+$/.test(s) || ["tick", "yes", "true"].indexOf(s) >= 0;
+    if (tick(v) && tick(e)) return true;
+    const letters = s => (String(s).toUpperCase().match(/[A-Z]/g) || []).sort().join("");
+    if (letters(e) && letters(e).length <= 4) return letters(v) === letters(e);
+    return v === e || (v.length >= 3 && e.indexOf(v) >= 0);
+  }
+  function inFigZone(box, z) {
+    if (!z) return true;
+    const cx = Number(box.x) + Number(box.w) / 2;
+    const cy = Number(box.y) + Number(box.h) / 2;
+    return cx >= Number(z.x) && cx <= Number(z.x) + Number(z.w) &&
+           cy >= Number(z.y) && cy <= Number(z.y) + Number(z.h);
+  }
+  function gradeFigExact(q, parts, textByPart, figBoxes) {
+    const defs = (q.figAnswer.boxes || []).filter(b => b.expect !== undefined && b.expect !== null);
+    const okMap = {}, res = [], partScores = {}, drawParts = [];
+    const figLetters = new Set(defs.map(b => b.part));
+    let score = 0;
+    defs.forEach(b => {
+      // Match by POSITION + value, not by the pre-placed box's id: a pupil who
+      // deletes a box and taps the same spot again still gets the mark.
+      const inZone = ((figBoxes || {})[b.part] || []).filter(f => inFigZone(f, b.zone || b));
+      const ok = String(b.expect) === ""
+        ? !inZone.some(f => String(f.value || "").trim())
+        : inZone.some(f => figExpectOk(f.value, b.expect));
+      okMap[b.id] = ok;
+      res.push({ part: "(" + b.part + ")", span: b.span || ("Write " + (b.expect || "the answer")), hit: ok });
     });
+    parts.forEach(p => {
+      partScores[p.letter] = 0;
+      const bs = defs.filter(b => b.part === p.letter);
+      if (bs.length) {
+        const hits = bs.filter(b => okMap[b.id]).length;
+        partScores[p.letter] = roundHalf(p.marks * hits / bs.length);
+        score += partScores[p.letter];
+        return;
+      }
+      if (p.type === "draw" || p.fig === "draw") { drawParts.push(p.letter); return; }
+      const pcps = (q.checkpoints || []).filter(c => c.part === "(" + p.letter + ")");
+      if (!pcps.length) return;
+      const g = window.QBGrade.gradeOEQ({ marks: p.marks, checkpoints: pcps }, textByPart[p.letter] || "");
+      partScores[p.letter] = g.score; score += g.score;
+      g.res.forEach(r => res.push({ part: "(" + p.letter + ")", span: r.span, hit: r.hit }));
+    });
+    const untagged = (q.checkpoints || []).filter(c => !c.part);
+    const others = parts.filter(p => !figLetters.has(p.letter) && p.type !== "draw" && p.fig !== "draw");
+    if (untagged.length && others.length) {
+      const g = window.QBGrade.gradeOEQ(
+        { marks: others.reduce((a, p) => a + p.marks, 0), checkpoints: untagged },
+        others.map(p => textByPart[p.letter] || "").join(" "));
+      score += g.score;
+      g.res.forEach(r => res.push({ part: "", span: r.span, hit: r.hit }));
+    }
+    return { score: Math.min(q.marks, roundHalf(score)), res, manual: [], auto: true,
+      partScores, drawParts, figOk: okMap };
   }
 
   // Grade each sub-part against its own checkpoints (matched by the "(a)" part
   // tag). Drawing parts carry no auto keywords (graded by the student). Questions
   // whose checkpoints are not part-tagged fall back to the legacy whole-text grade.
-  function gradeParts(q, parts, textByPart, tickByPart) {
+  function gradeParts(q, parts, textByPart, tickByPart, figBoxes) {
+    if (q.figAnswer && q.figAnswer.exact) return gradeFigExact(q, parts, textByPart, figBoxes || {});
     if (parts.some(p => p.type === "tick")) return gradeWithTicks(q, parts, textByPart, tickByPart || {});
     const cps = q.checkpoints || [];
     const letters = parts.map(p => p.letter);
@@ -669,6 +1040,7 @@
   }
 
   function initCanvas(cv) {
+    if (!cv) return;
     const ctx = cv.getContext && cv.getContext("2d");
     if (!ctx) return;
     ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height);
@@ -718,7 +1090,30 @@
           : `<div class="tickhint">Tick the boxes in the table above — no written answer needed here.</div>`;
       } else {
         if (seg) html += `<div class="partanswerlabel">Your answer ${markTag}</div>`;
-        if (p.type === "draw") {
+        if (p.fig === "text") {
+          const presetHint = (q.figAnswer && (q.figAnswer.boxes || []).length)
+            ? `<strong>Answer on the picture above.</strong> Type directly into the boxes drawn on the diagram. Drag a coloured bar to move a box, or click anywhere on the picture to add another one.`
+            : `<strong>Answer on the picture above.</strong> Click exactly where your answer belongs (inside a circle, box or space) and type it into the little box that appears. Drag the coloured bar to move a box; extra boxes can be removed with ×.`;
+          html += `<div class="figpanel" data-part="${p.letter}">
+              <div class="fighint">${presetHint} No answer box is needed down here.</div>
+              <div class="figtools">
+                <button type="button" class="btn sm figadd" data-part="${p.letter}">＋ Add an answer box ${esc(p.label)}</button>
+                <button type="button" class="btn sm ghost figclearboxes" data-part="${p.letter}">Clear my boxes</button>
+              </div>
+              <div class="figchips" data-part="${p.letter}"></div>
+            </div>`;
+        } else if (p.fig === "draw") {
+          html += `<div class="figpanel figdrawpanel" data-part="${p.letter}">
+              <div class="fighint"><strong>Draw on the picture above.</strong> Pick a tool, then draw straight on the diagram. Use <em>Label</em> to add a word next to what you drew. Drawings are graded by you against the model answer.</div>
+              <div class="figtools">
+                <button type="button" class="btn sm figmode active" data-mode="draw">✎ Draw</button>
+                <button type="button" class="btn sm ghost figmode" data-mode="arrow">↗ Arrow</button>
+                <button type="button" class="btn sm ghost figmode" data-mode="label">T Label</button>
+                <button type="button" class="btn sm ghost figclearstroke">Clear drawing</button>
+              </div>
+              <div class="figchips" data-part="${p.letter}"></div>
+            </div>`;
+        } else if (p.type === "draw") {
           html += `<div class="canvaswrap">
               <canvas class="drawcanvas" data-part="${p.letter}" width="600" height="200"></canvas>
               <button type="button" class="btn sm clearcanvas" data-part="${p.letter}">Clear drawing</button>
@@ -734,15 +1129,18 @@
     });
     html += `</div>`;
     const hasTicks = parts.some(p => p.type === "tick");
-    html += `<div class="structhint"><span>${hasTicks ? "Tick the boxes" : "One box per (a)(b)(c)"}</span><span>${split ? "Answer under each question" : "Hit the keywords"}</span><span>Submit</span></div>`;
-    html += `<p class="answerhint">${split ? "Each sub-question is followed immediately by its own answer space. " : "Each sub-question has its own answer space. "}${hasTicks ? "Tick the correct boxes in the table; written parts are checked against the scoring keywords." : "Drawing parts are graded by you afterwards; the rest are checked against the scoring keywords."}</p>`;
+    const hasFig = parts.some(p => p.fig);
+    html += `<div class="structhint"><span>${hasTicks ? "Tick the boxes" : (hasFig ? "Answer on the picture" : "One box per (a)(b)(c)")}</span><span>${hasFig ? "Click the diagram" : (split ? "Answer under each question" : "Hit the keywords")}</span><span>Submit</span></div>`;
+    html += `<p class="answerhint">${hasFig
+      ? "Write or draw your answers in the boxes on the diagram above — there is no separate answer box below. "
+      : (split ? "Each sub-question is followed immediately by its own answer space. " : "Each sub-question has its own answer space. ")}${hasTicks ? "Tick the correct boxes in the table; written parts are checked against the scoring keywords." : (hasFig ? "Drawings and their positions are graded by you against the model answer." : "Drawing parts are graded by you afterwards; the rest are checked against the scoring keywords.")}</p>`;
     box.innerHTML = html;
     if (hasTicks) injectTickInputs(q, parts, isRec ? rec : null);
 
     parts.forEach(p => {
       const el = box.querySelector(`.ans[data-part="${p.letter}"]`);
       if (isRec && el) { el.value = rec.parts[p.letter] || ""; el.setAttribute("readonly", ""); }
-      if (p.type === "draw") {
+      if (p.type === "draw" && !p.fig) {
         const cv = box.querySelector(`canvas[data-part="${p.letter}"]`);
         const clr = box.querySelector(`.clearcanvas[data-part="${p.letter}"]`);
         if (isRec && rec.canvases && rec.canvases[p.letter]) {
@@ -924,6 +1322,7 @@
 
     if (isSlot) stem = injectDiagramSlots(stem, q);
     if (isLine) stem = injectDiagramLines(stem, q);
+    if (q.figAnswer) stem = injectFigureOverlay(stem, q);
     if (isTF) {
       const tfList = q.tf.map((s, i) =>
         `<div class="tfrow" data-tf="${i}"><span class="tftext">${esc(s.label)}) ${esc(s.text)}</span>` +
@@ -938,7 +1337,7 @@
     // For multi-part OEQ, cut the stem at its (a)(b)(c) labels: the shared
     // introduction stays on top and each sub-question moves into its own card.
     const _qparts = (q.type !== "MCQ" && !isSlot && !isLine && !isTF) ? getQuestionParts(q) : null;
-    const _parted = !!(_qparts && (_qparts.length >= 2 || _qparts.some(p => p.type === "tick")));
+    const _parted = isParted(_qparts);
     const _split = _parted ? splitStemForParts(stem, _qparts) : null;
     $("#qstem").innerHTML = _split ? _split.intro : stem;
     if (_split) {
@@ -1054,6 +1453,7 @@
     $("#feedback").classList.add("hidden");
     $("#feedback").innerHTML = "";
 
+    if (q.figAnswer) initFigureOverlay(q, _qparts, rec);
     if (rec) paintFeedback(q, rec, true);
 
     // events
@@ -1106,8 +1506,9 @@
           tfMarks: g.tfMarks, marks: q.marks, score: 0, ok: false, ts: Date.now(), gaveUp: true };
       } else {
         const parts = getQuestionParts(q);
-        if (parts && (parts.length >= 2 || parts.some(p => p.type === "tick"))) {
+        if (isParted(parts)) {
           rec = { id: q.id, type: "OEQ", parts: {}, canvases: {}, ticks: {}, tickOk: {}, partRes: null,
+            figBoxes: {}, figStrokes: [], figOk: {},
             tickParts: parts.filter(p => p.type === "tick").map(p => p.label),
             score: 0, marks: q.marks, ok: false, ts: Date.now(), gaveUp: true,
             res: (q.checkpoints || []).map(c => ({ part: c.part || "", span: c.span, hit: false, manual: !!c.manual })),
@@ -1198,12 +1599,13 @@
       };
     } else {
       const parts = getQuestionParts(q);
-      if (parts && (parts.length >= 2 || parts.some(p => p.type === "tick"))) {
+      if (isParted(parts)) {
         oeqState.parts = {}; oeqState.canvases = {}; oeqState.ticks = {};
+        syncFigValues();
         parts.forEach(p => {
           const el = document.querySelector(`#qanswer .ans[data-part="${p.letter}"]`);
-          oeqState.parts[p.letter] = el ? el.value : "";
-          if (p.type === "draw") {
+          oeqState.parts[p.letter] = p.fig ? figTextFor(p.letter) : (el ? el.value : "");
+          if (p.type === "draw" && !p.fig) {
             const cv = document.querySelector(`#qanswer canvas[data-part="${p.letter}"]`);
             if (cv && cv.toDataURL && typeof cv.toDataURL === "function") {
               try { oeqState.canvases[p.letter] = cv.toDataURL(); } catch (e) {}
@@ -1219,12 +1621,16 @@
         }
         const anyFilled = Object.values(oeqState.parts).some(v => v.trim())
           || Object.keys(oeqState.canvases).length > 0
-          || Object.values(oeqState.ticks).some(t => Object.keys(t).length > 0);
+          || Object.values(oeqState.ticks).some(t => Object.keys(t).length > 0)
+          || figBoxesFlat().some(b => String(b.value || "").trim())
+          || (figState.strokes || []).filter(s => !s._live).length > 0;
         if (!anyFilled) { flash('Answer at least one sub-question (or click "Don\'t know — show answer")'); return; }
-        const g = gradeParts(q, parts, oeqState.parts, oeqState.ticks);
+        const g = gradeParts(q, parts, oeqState.parts, oeqState.ticks, figState.boxes);
         rec = {
           id: q.id, type: "OEQ", parts: oeqState.parts, canvases: oeqState.canvases,
           ticks: oeqState.ticks, tickOk: g.tickOk || {},
+          figBoxes: serializeFigBoxes(), figStrokes: (figState.strokes || []).filter(s => !s._live),
+          figOk: g.figOk || {},
           tickParts: parts.filter(p => p.type === "tick").map(p => p.label),
           partRes: g.partScores, drawParts: g.drawParts, score: g.score, marks: q.marks,
           res: g.res, manual: g.manual, auto: g.auto, ok: g.score >= q.marks, ts: Date.now()
@@ -1280,6 +1686,25 @@
       <span class="verdict ${rec.score >= rec.marks ? "ok" : "no"}">${verdict}</span>
       ${rec.override ? '<span class="tag">Self-graded</span>' : ""}
     </div>`;
+
+    if (rec.figOk) {
+      Object.keys(rec.figOk).forEach(id => {
+        const el = document.querySelector(`#qstem .figbox[data-boxid="${id}"], #qanswer .figbox[data-boxid="${id}"]`);
+        if (el) el.classList.add(rec.figOk[id] ? "graded-ok" : "graded-miss");
+      });
+    }
+    if (rec.figBoxes || rec.figStrokes) {
+      const items = [];
+      Object.keys(rec.figBoxes || {}).forEach(L => (rec.figBoxes[L] || []).forEach(b => {
+        if (String(b.value || "").trim()) items.push(`(${esc(L)}) ${esc(b.value)}`);
+      }));
+      const nStrokes = (rec.figStrokes || []).length;
+      if (nStrokes) items.push(`${nStrokes} drawing stroke${nStrokes > 1 ? "s" : ""} on the picture`);
+      html += `<div class="kwblock"><div class="kwtitle">Your answer on the diagram</div><div class="kwchips">` +
+        (items.length ? items.map(t => `<span class="kw hit"><span class="mark">✓</span><span class="txt">${t}</span></span>`).join("")
+          : `<span class="muted">Nothing entered on the diagram</span>`) +
+        `</div><p class="answerhint" style="margin-top:8px">Check where your labels and drawing sit against the model answer below; adjust your own score if needed.</p></div>`;
+    }
 
     if (rec.type === "MCQ") {
       const right = q.options.find(o => String(o.label) === String(q.choice));

@@ -521,3 +521,55 @@ details.keypoints .kpbody{
 .tfbtn.graded-ok{background:var(--ok,#1f9d5b);border-color:var(--ok,#1f9d5b);color:#fff;opacity:1}
 .tfbtn.graded-miss{background:#fff;border-color:#e0584f;color:#e0584f;text-decoration:line-through}
 .tfbtn:disabled{opacity:.95}
+
+/* ---------------- answer ON the diagram ----------------
+   The figure is the answer sheet: text boxes are dropped onto the image,
+   and a transparent SVG layer takes freehand lines / arrows. */
+.figans{line-height:0}
+.figans .figsvg{position:absolute;inset:0;width:100%;height:100%;z-index:3;
+  pointer-events:none;touch-action:none;overflow:visible}
+.figans .figlayer{position:absolute;inset:0;z-index:4;cursor:crosshair}
+.figans.drawmode .figsvg{pointer-events:auto;cursor:crosshair}
+.figans.drawmode .figlayer{pointer-events:none}
+.figans.locked .figsvg,.figans.locked .figlayer{pointer-events:none}
+.figstroke{fill:none;stroke:#c0392b;stroke-width:2.6;stroke-linecap:round;
+  stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
+.figtip{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);z-index:6;
+  white-space:nowrap;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.9);
+  border:1px solid rgba(13,86,76,.22);font:600 11.5px/1.3 var(--ff);color:#0d564c;
+  letter-spacing:.01em;pointer-events:none}
+.figans.drawmode .figtip{color:#8a3b00}
+.figans.withpreset .figtip{display:none}
+.figbox{position:absolute;z-index:5;display:flex;flex-direction:column;
+  background:rgba(255,255,255,.9);border:2px solid var(--accent);border-radius:7px;
+  box-shadow:0 2px 8px rgba(27,36,48,.3);line-height:1;overflow:hidden}
+.figbox.preset{border-color:var(--accent-dark)}
+.figbox.dragging{box-shadow:0 5px 16px rgba(27,36,48,.38);opacity:.92}
+.figbox.graded-ok{border-color:var(--ok);background:var(--ok-bg)}
+.figbox.graded-miss{border-color:var(--bad);background:var(--bad-bg)}
+.figbox.locked{box-shadow:0 1px 4px rgba(27,36,48,.2)}
+.figbar{display:flex;align-items:center;justify-content:space-between;flex:0 0 11px;
+  background:var(--accent-soft);border-bottom:1px solid rgba(13,86,76,.18);
+  padding:0 2px;cursor:move;touch-action:none;user-select:none}
+.figbox.locked .figbar{cursor:default}
+.figbox.preset .figdel{display:none}
+.figtag{font:700 8.5px/1 var(--ff);color:var(--accent-dark)}
+.figdel{border:0;background:transparent;color:var(--bad);font:700 12px/1 var(--ff);
+  padding:0 1px;cursor:pointer}
+.figinput{flex:1;width:100%;min-width:0;min-height:0;border:0;outline:none;
+  background:transparent;text-align:center;padding:0 1px;
+  font:700 clamp(10px,1.7vw,15px)/1 var(--ff);color:var(--ink)}
+.figinput::placeholder{color:#9bb0d0;font-weight:400;opacity:.9}
+.figinput[readonly]{cursor:default}
+.figpanel{background:#f3faf8;border:1.5px dashed var(--accent);border-radius:11px;
+  padding:12px 13px;margin-top:2px}
+.figdrawpanel{background:#fdf8f1;border-color:#d9a35b}
+.fighint{font:13px/1.6 var(--ff);color:var(--ink-soft);margin-bottom:10px}
+.fighint strong{color:var(--ink)}
+.figtools{display:flex;flex-wrap:wrap;gap:7px}
+.figtools .btn.sm{font-size:12.5px;padding:6px 11px}
+.figmode.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.figchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:0}
+.figchip{font-size:12px;background:#fff;border:1px solid var(--line);
+  border-radius:6px;padding:2px 8px;color:var(--ink-soft)}
+.qanswer.locked .figpanel button{opacity:.5;cursor:default}
