@@ -320,7 +320,103 @@
      review shows them in exactly the same positions. */
   let figState = { boxes: {}, strokes: [], mode: "label", activePart: "", wrap: null, nextId: 1, rec: false };
   let figDragBox = null, figStroke = null;
-  const isParted = parts => !!(parts && (parts.length >= 2 || parts.some(p => p.type === "tick" || p.fig)));
+  const isParted = parts => !!(parts && (parts.length >= 2 ||
+    parts.some(p => p.type === "tick" || p.type === "circle" || p.fig || (p.circles && p.circles.length))));
+
+  /* ---------------- "circle the correct answer" ----------------
+     The options are plain words printed in the question. Typing them into a
+     textarea is pointless, and a keyword grader cannot tell WHICH option a
+     pupil picked, so the words themselves become buttons: click one and it is
+     circled. Selections are graded exactly against the official answer. */
+  const normCircle = s => String(s == null ? "" : s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+  function circleGroups(parts) {
+    const out = [];
+    (parts || []).forEach(p => (p.circles || []).forEach(g => out.push({ g, part: p })));
+    return out;
+  }
+  function hasCircles(parts) { return circleGroups(parts).length > 0; }
+
+  function circleGroupHTML(g, card) {
+    const opts = (g.options || []).map((o, i) =>
+      (i ? '<span class="cslash">/</span>' : "") +
+      `<button type="button" class="cword" data-group="${esc(g.id)}" data-value="${esc(o)}">${esc(o)}</button>`
+    ).join("");
+    if (card) {
+      return `<span class="cwordrow" data-group="${esc(g.id)}">` +
+        `<span class="crowlabel">${esc(g.label || "Circle the correct answer")}</span>` +
+        `<span class="cwords">${opts}</span></span>`;
+    }
+    return `<span class="cgroup" data-group="${esc(g.id)}">( ${opts} )</span>`;
+  }
+
+  // Replace each declared option group in the stem, in document order. Repeating
+  // anchors (e.g. "( 1 / 2 / 3 / 4 )" three times) are consumed one by one.
+  function injectCircleWords(html, parts) {
+    let out = html;
+    circleGroups(parts).forEach(({ g }) => {
+      if (!g.anchor) return;
+      const i = out.indexOf(g.anchor);
+      if (i < 0) return;
+      out = out.slice(0, i) + circleGroupHTML(g, false) + out.slice(i + g.anchor.length);
+    });
+    return out;
+  }
+
+  function readCirclePicks() {
+    const out = {};
+    document.querySelectorAll("#qstem .cword.sel, #qanswer .cword.sel").forEach(b => {
+      (out[b.dataset.group] = out[b.dataset.group] || []).push(b.dataset.value);
+    });
+    return out;
+  }
+
+  function renderCircleReadouts(parts, rec) {
+    const picks = rec ? (rec.circles || {}) : readCirclePicks();
+    $$("#qanswer .circlereadout").forEach(box => {
+      const p = (parts || []).find(x => x.letter === box.dataset.part);
+      const chips = ((p && p.circles) || []).map(g => {
+        const vals = picks[g.id] || [];
+        return vals.length
+          ? `<span class="circchip">${esc(g.label ? g.label + ": " : "")}${esc(vals.join(" + "))}</span>`
+          : "";
+      }).filter(Boolean).join("");
+      box.innerHTML = chips || '<span class="muted">Nothing circled yet — click a word above</span>';
+    });
+  }
+
+  function bindCircleWords(parts, rec) {
+    const groups = {};
+    circleGroups(parts).forEach(({ g }) => { groups[g.id] = g; });
+    const saved = (rec && rec.circles) || {};
+    $$("#qstem .cword, #qanswer .cword").forEach(btn => {
+      const id = btn.dataset.group, g = groups[id];
+      if (!g) return;
+      const want = Array.isArray(g.correct) ? g.correct : [g.correct];
+      const isRight = want.some(w => normCircle(w) === normCircle(btn.dataset.value));
+      if (rec) {
+        const got = saved[id] || [];
+        const picked = got.some(v => normCircle(v) === normCircle(btn.dataset.value));
+        if (picked) btn.classList.add("sel");
+        btn.disabled = true;
+        if (isRight) btn.classList.add("graded-ok");
+        else if (picked) btn.classList.add("graded-miss");
+        return;
+      }
+      btn.addEventListener("click", () => {
+        const all = $$('.cword[data-group="' + id + '"]');
+        if (g.multi) {
+          btn.classList.toggle("sel");
+        } else {
+          const was = btn.classList.contains("sel");
+          all.forEach(x => x.classList.remove("sel"));
+          if (!was) btn.classList.add("sel");
+        }
+        renderCircleReadouts(parts);
+      });
+    });
+    renderCircleReadouts(parts, rec);
+  }
 
   function injectFigureOverlay(html, q) {
     const fa = q.figAnswer;
@@ -830,6 +926,10 @@
         });
       }
     }
+    parts.forEach(p => {
+      p.circles = (p.circles || []).map(g => Object.assign({}, g));
+      p.circles.forEach((g, i) => { if (!g.id) g.id = p.letter + (i + 1); });
+    });
     const fp = (q.figAnswer && q.figAnswer.parts) || {};
     parts.forEach(p => {
       if (!fp[p.letter]) return;
@@ -907,10 +1007,91 @@
       partScores, drawParts, figOk: okMap };
   }
 
+  function resolveCircleCps(q, p) {
+    if (p.cps) return p.cps.map(x => typeof x === "number" ? (q.checkpoints || [])[x] : x).filter(Boolean);
+    return (q.checkpoints || []).filter(c => c.part === "(" + p.letter + ")");
+  }
+
+  /* Circle questions are graded EXACTLY: a clicked word is either the official
+     option or it is not. Written sub-parts are still keyword graded, but only
+     against their own checkpoints. Mark totals are declared per part in data.js
+     and add up to q.marks, so a fully correct pupil gets full marks — the old
+     "5 keywords / 2 marks" split could never reach more than 1.5/2. */
+  function gradeCircleParts(q, parts, textByPart, picks) {
+    const res = [], partScores = {}, drawParts = [], circleOk = {};
+    let score = 0;
+    const optWords = new Set();
+    circleGroups(parts).forEach(({ g }) => (g.options || []).forEach(o => optWords.add(normCircle(o))));
+    parts.forEach(p => {
+      partScores[p.letter] = 0;
+      const gs = p.circles || [];
+      const cMarks = p.circleMarks != null ? p.circleMarks : (p.type === "circle" ? p.marks : 0);
+      if (gs.length) {
+        const plan = p.circleAll ? null : window.QBGrade.allocateMarks(cMarks, gs.length);
+        const hits = gs.map(g => {
+          const got = picks[g.id] || [];
+          const want = Array.isArray(g.correct) ? g.correct : [g.correct];
+          const ok = g.multi
+            ? (got.length === want.length && want.every(w => got.some(v => normCircle(v) === normCircle(w))))
+            : (got.length === 1 && normCircle(got[0]) === normCircle(want[0]));
+          circleOk[g.id] = ok;
+          return ok;
+        });
+        let gained = 0;
+        if (p.circleAll) gained = hits.every(Boolean) ? cMarks : 0;
+        else hits.forEach((h, i) => { if (h) gained += plan[i] || 0; });
+        score += gained;
+        partScores[p.letter] += gained;
+        gs.forEach((g, i) => {
+          const got = picks[g.id] || [];
+          const want = Array.isArray(g.correct) ? g.correct.join(" + ") : String(g.correct);
+          res.push({ part: p.label || "",
+            span: (g.label ? g.label + " → " : "") + want +
+              (hits[i] ? "" : " · you circled " + (got.length ? got.join(" + ") : "nothing")),
+            hit: hits[i] });
+        });
+      }
+      if (p.type === "draw" || p.fig === "draw") {
+        drawParts.push(p.letter);
+        res.push({ part: p.label || "", span: "Drawing on the picture — grade yourself", hit: false, manual: true });
+        return;
+      }
+      const tMarks = roundHalf(p.marks - cMarks);
+      if (tMarks <= 0) return;
+      let cps = resolveCircleCps(q, p).filter(c => !window.QBGrade.isMarkNote(c));
+      if (!cps.length) {
+        cps = (q.checkpoints || []).filter(c => !c.part && !optWords.has(normCircle(c.span)) &&
+          !window.QBGrade.isMarkNote(c));
+      }
+      if (!cps.length) return;
+      const g = window.QBGrade.gradeOEQ({ marks: tMarks, checkpoints: cps }, textByPart[p.letter] || "");
+      partScores[p.letter] += g.score;
+      score += g.score;
+      g.res.forEach(r => res.push({ part: p.label || "", span: r.span, hit: r.hit }));
+      g.manual.forEach(m => res.push({ part: p.label || "", span: m.span, hit: false, manual: true }));
+    });
+    return { score: Math.min(q.marks, roundHalf(score)), res,
+      manual: res.filter(r => r.manual), auto: true, partScores, drawParts, circleOk };
+  }
+
+  function circleGiveUpRes(q, parts) {
+    const res = [];
+    parts.forEach(p => {
+      (p.circles || []).forEach(g => res.push({ part: p.label || "",
+        span: (g.label ? g.label + " → " : "") +
+          (Array.isArray(g.correct) ? g.correct.join(" + ") : String(g.correct)), hit: false }));
+      if (p.type === "draw" || p.fig === "draw") return;
+      resolveCircleCps(q, p).filter(c => !window.QBGrade.isMarkNote(c))
+        .forEach(c => res.push({ part: p.label || "", span: c.span, hit: false, manual: !!c.manual }));
+    });
+    return res;
+  }
+
   // Grade each sub-part against its own checkpoints (matched by the "(a)" part
   // tag). Drawing parts carry no auto keywords (graded by the student). Questions
   // whose checkpoints are not part-tagged fall back to the legacy whole-text grade.
-  function gradeParts(q, parts, textByPart, tickByPart, figBoxes) {
+  function gradeParts(q, parts, textByPart, tickByPart, figBoxes, circlePicks) {
+    if (hasCircles(parts)) return gradeCircleParts(q, parts, textByPart, circlePicks || {});
     if (q.figAnswer && q.figAnswer.exact) return gradeFigExact(q, parts, textByPart, figBoxes || {});
     if (parts.some(p => p.type === "tick")) return gradeWithTicks(q, parts, textByPart, tickByPart || {});
     const cps = q.checkpoints || [];
@@ -1090,6 +1271,13 @@
           : `<div class="tickhint">Tick the boxes in the table above — no written answer needed here.</div>`;
       } else {
         if (seg) html += `<div class="partanswerlabel">Your answer ${markTag}</div>`;
+        const cardCircles = (p.circles || []).filter(g => !g.anchor);
+        if (cardCircles.length) {
+          html += `<div class="circlegroups">${cardCircles.map(g => circleGroupHTML(g, true)).join("")}</div>`;
+        }
+        if ((p.circles || []).length) {
+          html += `<div class="circlereadout" data-part="${p.letter}"></div>`;
+        }
         if (p.fig === "text") {
           const presetHint = (q.figAnswer && (q.figAnswer.boxes || []).length)
             ? `<strong>Answer on the picture above.</strong> Type directly into the boxes drawn on the diagram. Drag a coloured bar to move a box, or click anywhere on the picture to add another one.`
@@ -1113,6 +1301,8 @@
               </div>
               <div class="figchips" data-part="${p.letter}"></div>
             </div>`;
+        } else if (p.type === "circle") {
+          html += `<div class="circlehint">Click the word in the question above to circle it — no typing needed.${(p.circles || []).some(g => g.multi) ? " Select all the correct words." : ""}</div>`;
         } else if (p.type === "draw") {
           html += `<div class="canvaswrap">
               <canvas class="drawcanvas" data-part="${p.letter}" width="600" height="200"></canvas>
@@ -1130,12 +1320,16 @@
     html += `</div>`;
     const hasTicks = parts.some(p => p.type === "tick");
     const hasFig = parts.some(p => p.fig);
-    html += `<div class="structhint"><span>${hasTicks ? "Tick the boxes" : (hasFig ? "Answer on the picture" : "One box per (a)(b)(c)")}</span><span>${hasFig ? "Click the diagram" : (split ? "Answer under each question" : "Hit the keywords")}</span><span>Submit</span></div>`;
-    html += `<p class="answerhint">${hasFig
-      ? "Write or draw your answers in the boxes on the diagram above — there is no separate answer box below. "
-      : (split ? "Each sub-question is followed immediately by its own answer space. " : "Each sub-question has its own answer space. ")}${hasTicks ? "Tick the correct boxes in the table; written parts are checked against the scoring keywords." : (hasFig ? "Drawings and their positions are graded by you against the model answer." : "Drawing parts are graded by you afterwards; the rest are checked against the scoring keywords.")}</p>`;
+    const hasCircle = hasCircles(parts);
+    html += `<div class="structhint"><span>${hasCircle ? "Click the correct word" : (hasTicks ? "Tick the boxes" : (hasFig ? "Answer on the picture" : "One box per (a)(b)(c)"))}</span><span>${hasFig ? "Click the diagram" : (hasCircle ? "Circle it, then submit" : (split ? "Answer under each question" : "Hit the keywords"))}</span><span>Submit</span></div>`;
+    html += `<p class="answerhint">${hasCircle
+      ? "Click the correct word in the question to circle it — there is no text box for those parts. "
+      : (hasFig
+        ? "Write or draw your answers in the boxes on the diagram above — there is no separate answer box below. "
+        : (split ? "Each sub-question is followed immediately by its own answer space. " : "Each sub-question has its own answer space. "))}${hasTicks ? "Tick the correct boxes in the table; written parts are checked against the scoring keywords." : (hasFig ? "Drawings and their positions are graded by you against the model answer." : "Drawing parts are graded by you afterwards; the rest are checked against the scoring keywords.")}</p>`;
     box.innerHTML = html;
     if (hasTicks) injectTickInputs(q, parts, isRec ? rec : null);
+    if (hasCircle) bindCircleWords(parts, isRec ? rec : null);
 
     parts.forEach(p => {
       const el = box.querySelector(`.ans[data-part="${p.letter}"]`);
@@ -1337,13 +1531,13 @@
     // For multi-part OEQ, cut the stem at its (a)(b)(c) labels: the shared
     // introduction stays on top and each sub-question moves into its own card.
     const _qparts = (q.type !== "MCQ" && !isSlot && !isLine && !isTF) ? getQuestionParts(q) : null;
+    const _hasCircles = hasCircles(_qparts);
+    if (_hasCircles) stem = injectCircleWords(stem, _qparts);
     const _parted = isParted(_qparts);
     const _split = _parted ? splitStemForParts(stem, _qparts) : null;
     $("#qstem").innerHTML = _split ? _split.intro : stem;
-    if (_split) {
-      if (!_split.intro.trim()) $("#qstem").classList.add("intro-empty");
-      $("#qanswer").classList.add("parted");
-    }
+    if (_parted) $("#qanswer").classList.add("parted");
+    if (_split && !_split.intro.trim()) $("#qstem").classList.add("intro-empty");
 
     // answer area
     const box = $("#qanswer");
@@ -1454,6 +1648,7 @@
     $("#feedback").innerHTML = "";
 
     if (q.figAnswer) initFigureOverlay(q, _qparts, rec);
+    if (_hasCircles && !_parted) bindCircleWords(_qparts, rec);
     if (rec) paintFeedback(q, rec, true);
 
     // events
@@ -1507,12 +1702,15 @@
       } else {
         const parts = getQuestionParts(q);
         if (isParted(parts)) {
+          const isCircle = hasCircles(parts);
+          const giveRes = isCircle ? circleGiveUpRes(q, parts)
+            : (q.checkpoints || []).filter(c => !window.QBGrade.isMarkNote(c))
+                .map(c => ({ part: c.part || "", span: c.span, hit: false, manual: !!c.manual }));
           rec = { id: q.id, type: "OEQ", parts: {}, canvases: {}, ticks: {}, tickOk: {}, partRes: null,
-            figBoxes: {}, figStrokes: [], figOk: {},
+            figBoxes: {}, figStrokes: [], figOk: {}, circles: {}, circleOk: {},
             tickParts: parts.filter(p => p.type === "tick").map(p => p.label),
             score: 0, marks: q.marks, ok: false, ts: Date.now(), gaveUp: true,
-            res: (q.checkpoints || []).map(c => ({ part: c.part || "", span: c.span, hit: false, manual: !!c.manual })),
-            manual: (q.checkpoints || []).filter(c => c.manual), auto: false };
+            res: giveRes, manual: giveRes.filter(r => r.manual), auto: isCircle };
         } else {
           rec = { id: q.id, text: "", score: 0, marks: q.marks, ok: false, type: "OEQ", ts: Date.now(), gaveUp: true,
             res: [], manual: q.checkpoints || [], auto: false };
@@ -1602,6 +1800,7 @@
       if (isParted(parts)) {
         oeqState.parts = {}; oeqState.canvases = {}; oeqState.ticks = {};
         syncFigValues();
+        const circlePicks = hasCircles(parts) ? readCirclePicks() : {};
         parts.forEach(p => {
           const el = document.querySelector(`#qanswer .ans[data-part="${p.letter}"]`);
           oeqState.parts[p.letter] = p.fig ? figTextFor(p.letter) : (el ? el.value : "");
@@ -1611,6 +1810,12 @@
               try { oeqState.canvases[p.letter] = cv.toDataURL(); } catch (e) {}
             }
           }
+        });
+        circleGroups(parts).forEach(({ g, part }) => {
+          const vals = circlePicks[g.id] || [];
+          if (!vals.length) return;
+          const prev = oeqState.parts[part.letter] || "";
+          oeqState.parts[part.letter] = (prev ? prev + " · " : "") + vals.join(" + ");
         });
         const hasTicks = parts.some(p => p.type === "tick");
         if (hasTicks) {
@@ -1623,12 +1828,14 @@
           || Object.keys(oeqState.canvases).length > 0
           || Object.values(oeqState.ticks).some(t => Object.keys(t).length > 0)
           || figBoxesFlat().some(b => String(b.value || "").trim())
+          || Object.keys(circlePicks).some(k => (circlePicks[k] || []).length)
           || (figState.strokes || []).filter(s => !s._live).length > 0;
         if (!anyFilled) { flash('Answer at least one sub-question (or click "Don\'t know — show answer")'); return; }
-        const g = gradeParts(q, parts, oeqState.parts, oeqState.ticks, figState.boxes);
+        const g = gradeParts(q, parts, oeqState.parts, oeqState.ticks, figState.boxes, circlePicks);
         rec = {
           id: q.id, type: "OEQ", parts: oeqState.parts, canvases: oeqState.canvases,
           ticks: oeqState.ticks, tickOk: g.tickOk || {},
+          circles: circlePicks, circleOk: g.circleOk || {},
           figBoxes: serializeFigBoxes(), figStrokes: (figState.strokes || []).filter(s => !s._live),
           figOk: g.figOk || {},
           tickParts: parts.filter(p => p.type === "tick").map(p => p.label),
@@ -1693,12 +1900,15 @@
         if (el) el.classList.add(rec.figOk[id] ? "graded-ok" : "graded-miss");
       });
     }
-    if (rec.figBoxes || rec.figStrokes) {
-      const items = [];
-      Object.keys(rec.figBoxes || {}).forEach(L => (rec.figBoxes[L] || []).forEach(b => {
-        if (String(b.value || "").trim()) items.push(`(${esc(L)}) ${esc(b.value)}`);
-      }));
-      const nStrokes = (rec.figStrokes || []).length;
+    const figItems = [];
+    Object.keys(rec.figBoxes || {}).forEach(L => (rec.figBoxes[L] || []).forEach(b => {
+      if (String(b.value || "").trim()) figItems.push(`(${esc(L)}) ${esc(b.value)}`);
+    }));
+    const nStrokes = (rec.figStrokes || []).length;
+    // Only show this block for genuine diagram questions with something on the
+    // picture. Every parted OEQ record carries empty figBoxes/figStrokes keys.
+    if (q.figAnswer && (figItems.length || nStrokes)) {
+      const items = figItems.slice();
       if (nStrokes) items.push(`${nStrokes} drawing stroke${nStrokes > 1 ? "s" : ""} on the picture`);
       html += `<div class="kwblock"><div class="kwtitle">Your answer on the diagram</div><div class="kwchips">` +
         (items.length ? items.map(t => `<span class="kw hit"><span class="mark">✓</span><span class="txt">${t}</span></span>`).join("")

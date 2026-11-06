@@ -5944,10 +5944,16 @@ window.QUESTIONS = [
 "difficulty": 1,
 "kw": "",
 "stem": "<p>The diagram below shows animal F.</p>\n<figure><img src=\"images/EOY_HenryPark/q22_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>Animal F is a frog.</figcaption></figure>\n<p>Circle the correct answers.<br>a)  Animal F is a / an ( fish / reptile / amphibian ).<br>b)  Animal F has an outer covering of ( hair / skin / scales ).<br>c)  Animal F reproduces by ( seeds / laying eggs / giving birth ).<br>d)  The young of animal F is called a ( larva / nymph / tadpole ).</p>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "circle", "marks": 0.5, "hint": "Which animal group does animal F belong to?", "circles": [{"id": "a1", "label": "Animal F is a / an", "options": ["fish", "reptile", "amphibian"], "correct": "amphibian", "anchor": "( fish / reptile / amphibian )"}]},
+{"label": "(b)", "letter": "b", "type": "circle", "marks": 0.5, "hint": "What is the outer covering of animal F?", "circles": [{"id": "b1", "label": "Outer covering", "options": ["hair", "skin", "scales"], "correct": "skin", "anchor": "( hair / skin / scales )"}]},
+{"label": "(c)", "letter": "c", "type": "circle", "marks": 0.5, "hint": "How does animal F reproduce?", "circles": [{"id": "c1", "label": "Reproduction", "options": ["seeds", "laying eggs", "giving birth"], "correct": "laying eggs", "anchor": "( seeds / laying eggs / giving birth )"}]},
+{"label": "(d)", "letter": "d", "type": "circle", "marks": 0.5, "hint": "What is the young of animal F called?", "circles": [{"id": "d1", "label": "Young", "options": ["larva", "nymph", "tadpole"], "correct": "tadpole", "anchor": "( larva / nymph / tadpole )"}]}
+],
 "options": [],
 "myAnswer": "a) amphibian；b) skin；c) laying eggs；d) tadpole",
 "answer": "a) Amphibian；b) Skin；c) Laying eggs；d) Tadpoles",
-"keypoints": "a) amphibian\nb) skin (moist skin\nc) laying eggs\nd) tadpole\n0.5 mark for each part",
+"keypoints": "a) amphibian\nb) skin (moist skin)\nc) laying eggs\nd) tadpole",
 "checkpoints": [
 {
 "part": "",
@@ -6267,6 +6273,10 @@ window.QUESTIONS = [
 "difficulty": 1,
 "kw": "",
 "stem": "<p>Jasmine placed a bar magnet over a tray which was filled with two types of balls, A and B. All the balls weigh the same.</p>\n<figure><img src=\"images/EOY_HenryPark/q28_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>A bar magnet is placed above a tray filled with balls A and B (arrow pointing down).</figcaption></figure>\n<p>Jasmine then recorded her observations in the table below.</p>\n<table><tbody><tr><td>Ball</td><td>Number of balls attracted to the magnet</td></tr><tr><td>A</td><td>14</td></tr><tr><td>B</td><td>0</td></tr></tbody></table>\n<p>Circle the correct answers.<br>Based on her observation, ball B is likely to be made of a ( magnetic / non-magnetic ) material.<br>Based on her observation, ball A is likely to be made of a ( magnetic / non-magnetic ) material.</p>",
+"parts": [
+{"label": "Ball B", "letter": "a", "type": "circle", "marks": 1, "hint": "Ball B: 0 balls were attracted to the magnet.", "circles": [{"id": "a1", "label": "Ball B is made of a", "options": ["magnetic", "non-magnetic"], "correct": "non-magnetic", "anchor": "( magnetic / non-magnetic )"}]},
+{"label": "Ball A", "letter": "b", "type": "circle", "marks": 1, "hint": "Ball A: 14 balls were attracted to the magnet.", "circles": [{"id": "b1", "label": "Ball A is made of a", "options": ["magnetic", "non-magnetic"], "correct": "magnetic", "anchor": "( magnetic / non-magnetic )"}]}
+],
 "options": [],
 "myAnswer": "B = non-magnetic；A = magnetic",
 "answer": "Non-magnetic（B）；Magnetic（A）",
@@ -9594,6 +9604,12 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>Study the chart below. Living Things → Live in water（→ Has hair: 1 / No hair: 2）；Heading H（→ Has hair: 3 / No hair: 4）. (a) Write down a suitable heading for Heading H. [1] Use the chart above to circle the answers for (b), (c) and (d). (b) The animal shown below belongs to group ( 1 / 2 / 3 / 4 ). [1] The table below shows some characteristics of two animals, X and Y. Animal X: has a pair of feelers ✓, has hard outer covering ✓. Animal Y: has hair ✓, lives in water ✓. (c) Animal X belongs to group ( 1 / 2 / 3 / 4 ). [1] (d) Animal Y belongs to group ( 1 / 2 / 3 / 4 ). [1]</p>\n<figure>- <img src=\"images/EOY_NanHua/q27_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>Classification diagram — Living Things divided into Live in water (Has hair→1; No hair→2) and Heading H (Has hair→3; No hair→4)</figcaption></figure>\n<figure>- <img src=\"images/EOY_NanHua/q27_fig2.png\" alt=\"\" loading=\"lazy\"><figcaption>The fish in (b) (fish, has no hair, lives in water)</figcaption></figure>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "text", "marks": 1, "hint": "Write down a suitable heading for Heading H.", "cps": [0]},
+{"label": "(b)", "letter": "b", "type": "circle", "marks": 1, "hint": "Which group does the animal shown belong to?", "circles": [{"id": "b1", "label": "The animal shown belongs to group", "options": ["1", "2", "3", "4"], "correct": "2", "anchor": "( 1 / 2 / 3 / 4 )"}]},
+{"label": "(c)", "letter": "c", "type": "circle", "marks": 1, "hint": "Which group does Animal X belong to?", "circles": [{"id": "c1", "label": "Animal X belongs to group", "options": ["1", "2", "3", "4"], "correct": "4", "anchor": "( 1 / 2 / 3 / 4 )"}]},
+{"label": "(d)", "letter": "d", "type": "circle", "marks": 1, "hint": "Which group does Animal Y belong to?", "circles": [{"id": "d1", "label": "Animal Y belongs to group", "options": ["1", "2", "3", "4"], "correct": "1", "anchor": "( 1 / 2 / 3 / 4 )"}]}
+],
 "options": [],
 "myAnswer": "(a) Live on land. (b) 2 (c) 4 (d) 1",
 "answer": "(a) Heading H: Live on land (b) group 2 (c) Animal X: group 4 (d) Animal Y: group 1",
@@ -13557,6 +13573,11 @@ window.QUESTIONS = [
 "difficulty": 4,
 "kw": "",
 "stem": "<p>Sue conducted an investigation by hanging a magnet above some steel pins at different distances, X.</p>\n<figure><img src=\"images/EOY_Northland/q32_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>A suspended magnet (N on top, S at the bottom) at distance X from a pile of steel needles.</figcaption></figure>\n<p>For each distance, she counted the number of steel pins attracted to the magnet and recorded her results in the table.</p>\n<table><tbody><tr><td>Distance X (cm)</td><td>Number of steel pins attracted</td></tr><tr><td>1</td><td>8</td></tr><tr><td>3</td><td>P</td></tr><tr><td>5</td><td>5</td></tr><tr><td>8</td><td>1</td></tr></tbody></table>\n<p>(a) Based on the results, suggest a possible value for P. [1]<br>(b) Circle the correct answers. [1]<br>As distance X ( increases / decreases ), the number of steel pins attracted to the magnet ( increases / decreases ).<br>(c) Sue observed that magnet M and object Y were attracted as shown.</p>\n<figure><img src=\"images/EOY_Northland/q32_fig2.png\" alt=\"\" loading=\"lazy\"><figcaption>Magnet M (A|B) and object Y (C|D) attract each other.</figcaption></figure>\n<p>Using only magnet M and object Y, what should Sue do to test if object Y is a magnet? Explain your answer. [2]</p>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "text", "marks": 1, "hint": "Suggest a possible value for P.", "cps": [{"span": "A value between 5 and 8 (e.g. 6 or 7)", "alts": [["6"], ["7"]]}]},
+{"label": "(b)", "letter": "b", "type": "circle", "marks": 1, "hint": "As distance X changes, what happens?", "circles": [{"id": "b1", "label": "As distance X", "options": ["increases", "decreases"], "correct": "increases", "anchor": "( increases / decreases )"}, {"id": "b2", "label": "the number of steel pins attracted will", "options": ["increases", "decreases"], "correct": "decreases", "anchor": "( increases / decreases )"}]},
+{"label": "(c)", "letter": "c", "type": "text", "marks": 2, "hint": "How would you test if object Y is a magnet? Explain.", "cps": [3, 4, 5]}
+],
 "options": [],
 "myAnswer": "(a) 6（6–7 之间均可）。(b) increases；decreases。(c) 把磁铁 M 翻转，使 A 端朝向 Y 的 C 端，观察是否相斥；若相斥，说明 Y 也是磁铁（吸引不能证明，排斥只能发生在两块磁铁之间）。",
 "answer": "(a) 6 (b) Increases. Decreases. (c) Flip magnet M where A faces C and see if they will repel. (if they repel, then Y is a magnet)",
@@ -17134,6 +17155,11 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>The flowchart below shows the properties of materials, P, Q, R and S. [Figure: Materials → Does it absorb water? yes→P; no → Does it break easily? yes→Q; no → Does it allow light to pass through? yes→R; no→S] (a) Based on the flowchart, state all the properties of material Q. [1] (b) Which one of the following materials is likely to be material S? Circle your answer. [1] fabric / glass / metal. Adam set up a tent as shown below to prevent others from seeing his belongings inside it. [Figure: a tent, part A is the canvas of the tent] (c) Adam was told that material R was not suitable for making part A of the tent. Explain your answer. [1]</p>\n<figure>- <img src=\"images/EOY_Rosyth/q30_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>The materials are sorted into P, Q, R and S based on whether they absorb water, break easily, and allow light to pass through</figcaption></figure>\n<figure>- <img src=\"images/EOY_Rosyth/q30_fig2.png\" alt=\"\" loading=\"lazy\"><figcaption>Part A is the canvas sheet that blocks the view</figcaption></figure>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "text", "marks": 1, "hint": "State all the properties of material Q.", "cps": [0]},
+{"label": "(b)", "letter": "b", "type": "circle", "marks": 1, "hint": "Which material is likely to be material S?", "circles": [{"id": "b1", "label": "Material S is likely to be", "options": ["fabric", "glass", "metal"], "correct": "metal"}]},
+{"label": "(c)", "letter": "c", "type": "text", "marks": 1, "hint": "Why is material R not suitable for part A of the tent?", "cps": [2]}
+],
 "options": [],
 "myAnswer": "(a) Q does not absorb water and breaks easily. (b) Metal. (c) R allows light to pass through, so people can see through it into the tent.",
 "answer": "(a) Q is **water proof** and **breaks easily**. (b) **metal**. (c) E: Material R allows **light to pass through**. R: People can **see through** the material and into the tent.",
@@ -17317,6 +17343,12 @@ window.QUESTIONS = [
 "difficulty": 4,
 "kw": "",
 "stem": "<p>Jasmine has a plastic stand and three rings, W, X and Y. Two of them are ring magnets and one is a plastic ring. [Figure: three rings W (striped), X (white) and Y (dotted) and a plastic stand] The diagram below shows the positions of the rings when Jasmine places them on top of one another through the plastic stand. [Figure: set-up A — W at the bottom, X floating above W, Y resting on top of X] (a) Based on set-up A, explain why ring X is floating above ring W? [1] (b) State what would be observed if each ring is flipped onto their other side. [1] (c) Given that the same apparatus are used, circle the set-up that shows another possible arrangement of the rings. [1] (two options: on the left X floats between W and Y; on the right Y is next to W and the white ring is at the bottom) Jasmine replaced ring X with ring Z and her results are shown in the diagram below. [Figure: with Z in place of X, Z floats higher than X] (d) Based on Jasmine's results, what can be concluded about the magnetic strengths of rings X and Z? [1]</p>\n<figure>- <img src=\"images/EOY_Rosyth/q33_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>Three rings, W, X and Y; two of them are magnetic rings and one is a plastic ring</figcaption></figure>\n<figure>- <img src=\"images/EOY_Rosyth/q33_fig2.png\" alt=\"\" loading=\"lazy\"><figcaption>Ring X floats above ring W, and ring Y rests on top of ring X</figcaption></figure>\n<figure>- <img src=\"images/EOY_Rosyth/q33_fig3.png\" alt=\"\" loading=\"lazy\"><figcaption>Left: Y at the top, W in the middle, X floating above it; Right: Y touching W, with a white ring at the very bottom</figcaption></figure>\n<figure>- <img src=\"images/EOY_Rosyth/q33_fig4.png\" alt=\"\" loading=\"lazy\"><figcaption>Ring Z floats higher above than ring X</figcaption></figure>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "text", "marks": 1, "hint": "Explain why ring X is floating above ring W.", "cps": [0]},
+{"label": "(b)", "letter": "b", "type": "text", "marks": 1, "hint": "What would be observed if each ring is flipped?", "cps": [1]},
+{"label": "(c)", "letter": "c", "type": "circle", "marks": 1, "hint": "Which set-up shows another possible arrangement?", "circles": [{"id": "c1", "label": "Circle the set-up", "options": ["Left set-up", "Right set-up"], "correct": "Right set-up"}]},
+{"label": "(d)", "letter": "d", "type": "text", "marks": 1, "hint": "What can be concluded about the magnetic strengths of X and Z?", "cps": [3]}
+],
 "options": [],
 "myAnswer": "(a) The like poles of X and W are facing each other and repel. (b) The rings would remain in the same positions (flipping does not change which poles face each other). (c) 右边的 set-up（Y 在 W 上方、白环在最底）。(d) Z is a stronger magnet than X.",
 "answer": "(a) **Like** poles of X and W **facing each other**, and they **repel** one another. (b) The arrangement of rings **remain the same**. (c) The set-up on the **right** of the circle. (d) Z is a **stronger** magnet than X.",
@@ -22501,6 +22533,10 @@ window.QUESTIONS = [
 "difficulty": 2,
 "kw": "",
 "stem": "<p>Timmy made an electromagnet as shown below. His electromagnet attracted 2 steel clips from a fixed distance, d.<br>- (a) Suggest a suitable material used to make the rod. [1]<br>- (b) Circle the correct answer to show how the number of steel clips attracted to the electromagnet change when Timmy made the following changes to his electromagnet. [2]<br>- (i) He added more batteries to his electromagnet. The number of steel clips attracted will ( increase / decrease / stay the same ).<br>- (ii) He reduced the number of coils of wire around the rod. The number of steel clips attracted will ( increase / decrease / stay the same ).</p>\n<figure><img src=\"images/EOY_TaoNan/q23_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>A battery is connected to an iron rod wound with 10 coils of wire, with a steel paper clip at a distance d below.</figcaption></figure>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "text", "marks": 1, "hint": "Suggest a suitable material used to make the rod.", "cps": [0]},
+{"label": "(b)", "letter": "b", "type": "circle", "marks": 2, "hint": "What happens to the number of steel clips attracted?", "circles": [{"id": "b1", "label": "(i) more batteries → the number will", "options": ["increase", "decrease", "stay the same"], "correct": "increase", "anchor": "( increase / decrease / stay the same )"}, {"id": "b2", "label": "(ii) fewer coils → the number will", "options": ["increase", "decrease", "stay the same"], "correct": "decrease", "anchor": "( increase / decrease / stay the same )"}]}
+],
 "options": [],
 "myAnswer": "- (a) Iron（铁）。\n  - (b)(i) increase；(ii) decrease。",
 "answer": "- (a) Iron.\n  - (b) (i) increase；(ii) decrease.",
@@ -24285,6 +24321,10 @@ window.QUESTIONS = [
 "difficulty": 2,
 "kw": "",
 "stem": "<p>Study the classification diagram.<br>Things found in the ecogarden → Group A: terrapin, fish, cactus, hibiscus plant; Group B: fence, flowerpot, watering can, spade.<br>(a) Give suitable sub-headings for groups A and B. [1]<br>(b) Circle the things that can be classified in Group A. [1]</p>\n<figure><img src=\"images/WA1_ACSJ/q1_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>Diagram 1: Classification chart of items in an eco-garden — Group A (terrapin, fish, cactus, hibiscus plant) and Group B (fence, flowerpot, watering can, spade).</figcaption></figure>\n<figure><img src=\"images/WA1_ACSJ/q1_fig2.png\" alt=\"\" loading=\"lazy\"><figcaption>Diagram 2: (b) The four items to be circled — rabbit, water hose, tomato plant, stone path.</figcaption></figure>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "text", "marks": 1, "hint": "Give suitable sub-headings for groups A and B.", "cps": [0]},
+{"label": "(b)", "letter": "b", "type": "circle", "marks": 1, "hint": "Circle the things that can be classified in Group A.", "circles": [{"id": "b1", "label": "Circle ALL the living things", "options": ["rabbit", "water hose", "tomato plant", "stone path"], "correct": ["rabbit", "tomato plant"], "multi": true}]}
+],
 "options": [],
 "myAnswer": "(a) Group A: Living things；Group B: Non-living things\n  (b) 圈 rabbit 和 tomato plant",
 "answer": "(Official):\n  (a) Group A: Living things; Group B: Non-living things\n  (b) rabbit & tomato plant",
@@ -26894,6 +26934,12 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>Study the chart below. Using the chart above, circle the correct answer for (a), (b) and (c).</p>\n<figure>- <img src=\"images/WA1_NanHua/q5_fig1.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>- Caption: classification chart — Plants are divided into Flowering (grow on land→box 1, grow in water→box 2) and Heading T (grow on land→box 3, grow in water→box 4)</p>\n<p><strong>(a)</strong> The diagram below shows a plant. The plant shown is ( 1 / 2 / 3 / 4 ). [1]</p>\n<figure>- <img src=\"images/WA1_NanHua/q5_fig2.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>- Caption: diagram of a banana tree, labelled fruit</p>\n<p><strong>(b)(c)</strong> The table below shows two characteristics of plants P and Q.</p>\n<figure>- <img src=\"images/WA1_NanHua/q5_fig3.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>- Caption: characteristics table — Plant P: Grow in water √, Reproduce by seeds X; Plant Q: Grow in water √, Reproduce by seeds √<br>- <strong>(b)</strong> Plant P is ( 1 / 2 / 3 / 4 ). [1]<br>- <strong>(c)</strong> Plant Q is ( 1 / 2 / 3 / 4 ). [1]</p>\n<p><strong>(d)</strong> What is a suitable heading for Heading T? [1]<br>- Heading T: ________</p>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "circle", "marks": 1, "hint": "Which group is the plant shown in?", "circles": [{"id": "a1", "label": "The plant shown is in group", "options": ["1", "2", "3", "4"], "correct": "1", "anchor": "( 1 / 2 / 3 / 4 )"}]},
+{"label": "(b)", "letter": "b", "type": "circle", "marks": 1, "hint": "Which group is Plant P in?", "circles": [{"id": "b1", "label": "Plant P is in group", "options": ["1", "2", "3", "4"], "correct": "4", "anchor": "( 1 / 2 / 3 / 4 )"}]},
+{"label": "(c)", "letter": "c", "type": "circle", "marks": 1, "hint": "Which group is Plant Q in?", "circles": [{"id": "c1", "label": "Plant Q is in group", "options": ["1", "2", "3", "4"], "correct": "2", "anchor": "( 1 / 2 / 3 / 4 )"}]},
+{"label": "(d)", "letter": "d", "type": "blank", "marks": 1, "hint": "What is a suitable heading for Heading T?", "unit": "", "cps": [10]}
+],
 "options": [],
 "myAnswer": "(a) 1；(b) 4；(c) 2；(d) Non-flowering",
 "answer": "5(a) (1)；5(b) (4)；5(c) (2)；5(d) Non-flowering",
@@ -28270,6 +28316,10 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>Study the pictures below carefully. (The animals are not drawn to scale.)</p>\n<figure><img src=\"images/WA1_TaoNan/q10_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>X = fish (has scales, fins and a tail); Y = mammal (has hair)</figcaption></figure>\n<p>(a) Circle the <strong>animal group</strong> each of the above animals belong to.</p>\n<p>Animal X: (Bird / Fish / Amphibian / Reptile / Mammal / Insect) [½]<br>Animal Y: (Bird / Fish / Amphibian / Reptile / Mammal / Insect) [½]</p>\n<p>(b) Study animal Z.</p>\n<figure><img src=\"images/WA1_TaoNan/q10_fig2.png\" alt=\"\" loading=\"lazy\"><figcaption>Z = salamander (has moist skin and a tail)</figcaption></figure>\n<p>Does it belong to the same animal group as animal X? Explain why using a unique characteristic of that animal group. [1]</p>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "circle", "marks": 1, "hint": "Circle the animal group each animal belongs to.", "circles": [{"id": "a1", "label": "Animal X", "options": ["Bird", "Fish", "Amphibian", "Reptile", "Mammal", "Insect"], "correct": "Fish", "anchor": "(Bird / Fish / Amphibian / Reptile / Mammal / Insect)"}, {"id": "a2", "label": "Animal Y", "options": ["Bird", "Fish", "Amphibian", "Reptile", "Mammal", "Insect"], "correct": "Mammal", "anchor": "(Bird / Fish / Amphibian / Reptile / Mammal / Insect)"}]},
+{"label": "(b)", "letter": "b", "type": "text", "marks": 1, "hint": "Does animal Z belong to the same group as animal X? Explain.", "cps": [3, 4, 5]}
+],
 "options": [],
 "myAnswer": "- (a) Animal X: Fish; Animal Y: Mammal.\n  - (b) No. Animal Z is an amphibian — it has moist skin (and lives on both land and in water), which is a unique characteristic of amphibians, not fish.",
 "answer": "- a) Animal X: Fish; Animal Y: Mammal.\n  - b) No. Animal Z has moist skin and lives on both land and water. It is an amphibian.",
@@ -29791,6 +29841,11 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>You are given a candlelight and three objects made of different materials, X, Y and Z.<br>- You may switch on the candlelight by pushing the black switch at its base.<br>- Please switch off the candlelight after use.</p>\n<p>Use the objects and the candlelight to answer the following questions.</p>\n<p>(a) Describe how you will use the candlelight to conclude which object, X, Y or Z, is transparent. [1]</p>\n<p>(b) Your teacher has placed objects X, Y and Z in a container of water as shown on the screen. What can you conclude about the materials' ability to sink or float in water? [1]<br>Circle your conclusion for each of the object.<br>X: ( Floats on water / Sinks in water )<br>Y: ( Floats on water / Sinks in water )<br>Z: ( Floats on water / Sinks in water )</p>\n<p>(c) The picture shows animal X in a tank.<br>You need to design a shelter as shown above for animal X that prefers a dark environment, which material, X, Y or Z, would be the most suitable? Explain your answer. [1]</p>\n<p>End of paper</p>\n<figure><img src=\"images/WA2_ACSJ/q9_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>A tank with water, animal X at the bottom, with a shelter at the bottom of the tank</figcaption></figure>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "text", "marks": 1, "hint": "Describe how to find out which object is transparent.", "cps": [0]},
+{"label": "(b)", "letter": "b", "type": "circle", "marks": 1, "circleAll": true, "hint": "Circle your conclusion for each object. All three must be correct.", "circles": [{"id": "b1", "label": "Object X", "options": ["Floats on water", "Sinks in water"], "correct": "Sinks in water", "anchor": "( Floats on water / Sinks in water )"}, {"id": "b2", "label": "Object Y", "options": ["Floats on water", "Sinks in water"], "correct": "Sinks in water", "anchor": "( Floats on water / Sinks in water )"}, {"id": "b3", "label": "Object Z", "options": ["Floats on water", "Sinks in water"], "correct": "Floats on water", "anchor": "( Floats on water / Sinks in water )"}]},
+{"label": "(c)", "letter": "c", "type": "text", "marks": 1, "hint": "Which material is most suitable for the shelter? Explain.", "cps": [2, 3]}
+],
 "options": [],
 "myAnswer": "(a) Shine the candlelight on each object and observe which object allows most light to pass through it. That object is transparent.\n  (b) X: Sinks in water；Y: Sinks in water；Z: Floats on water\n  (c) Material X. It sinks in water and is not transparent（不透光）. Animal X prefers a dark environment and the shelter must be at the bottom of the tank.",
 "answer": "(a) Shine the candlelight on each object. Observe which object allows most light to pass through.\n  (b) X: Sinks in water；Y: Sinks in water；Z: Floats on water\n  (c) Material X. It sinks in water and is not transparent. Animal X prefers a dark environment and the shelter must be at the bottom of the tank.",
@@ -31135,6 +31190,11 @@ window.QUESTIONS = [
 "difficulty": 4,
 "kw": "",
 "stem": "<p><strong>(a)</strong><br>The diagrams below show two living things.<br>(a) State one similarity between the fern and the mushroom. [1]</p>\n<figure>- <img src=\"images/WA2_NanHua/q6_fig1.png\" alt=\"\" loading=\"lazy\"><figcaption>Diagram: Q6(a) comparison table of a Fern and a Mushroom</figcaption></figure>\n<p><strong>(b)</strong><br>James conducted an experiment using bread. He added water on the bread and then use an air hose to remove the air in the plastic bag as shown below.<br>(b) Circle the correct answer.<br>James wanted to find out if ( water / food / air ) is needed for bread mould to grow based on the experiment conducted. [1]</p>\n<figure>- <img src=\"images/WA2_NanHua/q6_fig2.png\" alt=\"\" loading=\"lazy\"><figcaption>Diagram: Q6(b) bread experiment, Before (air is drawn out of the bag with a syringe) and After (no air in the bag)</figcaption></figure>\n<p><strong>(c)</strong><br>James prepared three set-ups using the same type of bread and plastic bags. He removed the air in the plastic bags and placed the set-ups at the back of the classroom. One week later, James checked his set-ups and recorded his observations in the table below.<br>(c) James suspected that there were holes in the sealed plastic bag used in set-up B. Do you agree? Explain your answer. [2]</p>\n<figure>- <img src=\"images/WA2_NanHua/q6_fig3.png\" alt=\"\" loading=\"lazy\"><figcaption>Diagram: Q6(c) observations of three sealed bags — Set-up A (No mould), Set-up B (mould), Set-up C (No mould)</figcaption></figure>\n<figure>- <img src=\"images/WA2_NanHua/q6_fig4.png\" alt=\"\" loading=\"lazy\"><figcaption>Diagram: Q6(c) data table for the three set-ups (only one drop of water was added to each; only B grew mould)</figcaption></figure>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "text", "marks": 1, "hint": "State one similarity between the fern and the mushroom.", "cps": [{"span": "One similarity (spores / cannot move / need air, food and water / can reproduce)", "alts": [["spores"], ["unable", "move", "place"], ["need", "air", "food", "water"], ["reproduce"]]}]},
+{"label": "(b)", "letter": "b", "type": "circle", "marks": 1, "hint": "What did James want to find out?", "circles": [{"id": "b1", "label": "James wanted to find out if", "options": ["water", "food", "air"], "correct": "air", "anchor": "( water / food / air )"}]},
+{"label": "(c)", "letter": "c", "type": "text", "marks": 2, "hint": "Do you agree that set-up B has holes? Explain.", "cps": [5, 6, 7, 8, 9]}
+],
 "options": [],
 "myAnswer": "- (a) Both the fern and the mushroom reproduce by spores.（也可答：两者都不能从一个地方移动到另一个地方／都需要空气、水和养料才能生存。）\n- (b) air\n- (c) Yes. 三组都加了同样的一滴水、都抽走了空气，只有 B 长出霉菌；霉菌生长需要空气，说明 B 的袋子里一定有空气进入，即袋子有洞（密封不好），所以同意詹姆斯的猜测。",
 "answer": "- **6a** Any one of the following:\n  - Both living things reproduced by spores.\n  - Both living things are unable to move from place to place.\n  - Both need air, food and water to survive.\n  - Both can reproduce.\n- **6b** Air\n- **6c** Yes.\n  - Mould needs air (Concept)\n  - When mould is seen in the sealed plastic bag C, it means that air must have entered the through the holes. (Evidence)\n  - *(Note: the official answer writes \"bag C\" here, but the paper's data shows that mould grew in Set-up B, so it should be a typo; use B when answering.)*",
@@ -33794,6 +33854,10 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>Leela observed three animals X, Y and Z. She recorded their characteristics in the table as shown. A tick (✓) indicates that the animal has that characteristic.</p>\n<figure><img src=\"images/WA2_StHilda/q12_fig1.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(Table: Characteristics | X | Y | Z; Lives in water: X ✓, Z ✓; Covered with hair: Y ✓, Z ✓; Produces milk for its young: Y ✓, Z ✓)</p>\n<p>(a) Based on the characteristics shown in the table above, state one difference and one similarity between animals X and Z.<br>- (i) Difference: [1]<br>- (ii) Similarity: [1]</p>\n<p>(b) Based on the characteristics shown in the table above, circle the group that animal Y belongs to. Give a reason for your answer.<br>- (i) Animal group: ( Birds / Mammals / Fish / Reptiles / Amphibians ) [1]<br>- (ii) Reason: [1]</p>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "text", "marks": 2, "hint": "State one difference and one similarity between animals X and Z.", "cps": [0, 1]},
+{"label": "(b)", "letter": "b", "type": "text", "marks": 2, "circleMarks": 1, "hint": "Circle the group animal Y belongs to, then give a reason.", "cps": [{"span": "Reason: has hair as body covering / produces milk for its young", "alts": [["ii", "hair", "body", "covering"], ["produce", "milk", "young"], ["hair"], ["milk"]]}], "circles": [{"id": "b1", "label": "Animal Y belongs to", "options": ["Birds", "Mammals", "Fish", "Reptiles", "Amphibians"], "correct": "Mammals", "anchor": "( Birds / Mammals / Fish / Reptiles / Amphibians )"}]}
+],
 "options": [],
 "myAnswer": "- (a)(i) Animal Z is covered with hair (and produces milk for its young), but animal X is not covered with hair.\n  - (a)(ii) Both animals X and Z live in water.\n  - (b)(i) Mammals\n  - (b)(ii) Animal Y is covered with hair and produces milk for its young.",
 "answer": "- 12(a)(i)：Z is covered with hair but X is not covered with hair.\n  - 12(a)(ii)：Both X and Z live in water.\n  - 12(b)(i)：Mammals\n  - 12(b)(ii)：Mammals have hair as body covering.",
@@ -38198,6 +38262,13 @@ window.QUESTIONS = [
 "kw": "",
 "stem": "<p><strong>Task 2: Compare the magnetic strength of different magnets</strong><br><strong>[Procedure]</strong><br>1. Remove both magnets and the paper clip from the plastic bag.<br>2. On the ruler printed in <strong>Diagram 1</strong>, place the paper clip at the 0 cm mark and magnet A at the 5 cm mark.<br>3. Move magnet A along the printed ruler slowly towards the paper clip.<br>4. Stop moving magnet A once the paper clip moves.<br>5. On the ruler printed in <strong>Diagram 2</strong> below, mark out and label the reading for magnet A. Refer to the example below to see how the marking is done.<br>6. Repeat steps (2) to (5) with magnet B.<br><strong>[Results]</strong><br>(a) Mark out the readings on the printed ruler in <strong>Diagram 2</strong> at which the paper clip started to move towards magnets A and B. Label 'A' and 'B' for the respective marking. <strong>[1]</strong><br><strong>[Experimental Aim]</strong><br>(b) Circle the correct answer to complete the following statement. <strong>[1]</strong><br>To find out if the ( size / colour / position ) of the magnets affects their magnetic strength<br><strong>[Results]</strong><br>(c) Based on your observations, circle the correct answer to complete the following statement. <strong>[1]</strong><br>The paper clip moved as the magnets ( attracted / repelled ) it.<br>(d) What can you observe about the magnetic strength of magnets A and B? <strong>[1]</strong><br>Tick (√) your answer in the box below:</p>\n<table><tbody><tr><td></td><td></td></tr><tr><td></td><td>Magnet A is as strong as Magnet B.</td></tr><tr><td></td><td>Magnet A is stronger than Magnet B.</td></tr><tr><td></td><td>Magnet B is stronger than Magnet A.</td></tr></tbody></table>\n<p>(e) Explain your answer in (d). <strong>[1]</strong></p>\n<figure><img src=\"images/WA3_Rosyth/qT2_fig1.png\" alt=\"Task 2 Diagram 1\" loading=\"lazy\"></figure>\n<figure><img src=\"images/WA3_Rosyth/qT2_fig2.png\" alt=\"Task 2 Diagram 2\" loading=\"lazy\"></figure>",
 "figAnswer": {"fig": 1, "parts": {"a": "draw"}, "boxes": []},
+"parts": [
+{"label": "(a)", "letter": "a", "type": "draw", "marks": 1, "hint": "Mark out the readings on the ruler in Diagram 2."},
+{"label": "(b)", "letter": "b", "type": "circle", "marks": 1, "hint": "Which variable is being tested?", "circles": [{"id": "b1", "label": "To find out if the", "options": ["size", "colour", "position"], "correct": "size", "anchor": "( size / colour / position )"}]},
+{"label": "(c)", "letter": "c", "type": "circle", "marks": 1, "hint": "Why did the paper clip move?", "circles": [{"id": "c1", "label": "The paper clip moved as the magnets", "options": ["attracted", "repelled"], "correct": "attracted", "anchor": "( attracted / repelled )"}]},
+{"label": "(d)", "letter": "d", "type": "text", "marks": 1, "hint": "What can you observe about the magnetic strengths of A and B?", "cps": [2]},
+{"label": "(e)", "letter": "e", "type": "text", "marks": 1, "hint": "Explain your answer in (d).", "cps": [3]}
+],
 "options": [],
 "myAnswer": "- (a)：A 和 B 标记在同一位置（约 1.5 cm 处，官方答案Diagram中 A 与 B 重合标在同一读数）\n  - (b)：**size**\n  - (c)：**attracted**\n  - (d)：Magnet A is as strong as Magnet B.（A、B 在相同距离处均能吸引纸夹）\n  - (e)：Both magnets attracted the paper clip at the same distance (from the paper clip) / at the same reading on the ruler, so they have the same magnetic strength.",
 "answer": "(Official): a) On Diagram 2, \"A and B\" are marked at the same position (about the same reading); b) size; c) attracted; d) \"Magnet A is stronger than Magnet B.\" (as printed in the scanned copy); e) \"Magnet A attracted the paperclip from the same distance.\" (as printed in the scanned copy)\n  - ⚠️ Note: In the official answer scan, (d) is written as \"stronger than\", but its answer diagram for (a) shows the marks for A and B at the **same** distance, so logically (d) should be **\"Magnet A is as strong as Magnet B\"**, and the explanation for (e) should be \"both magnets attracted the paperclip from the same distance\". Use the diagram in (a) as the guide: A and B show the same reading → the magnets are of equal strength.",
@@ -38961,6 +39032,10 @@ window.QUESTIONS = [
 "difficulty": 3,
 "kw": "",
 "stem": "<p>John conducted a few tests on materials Q, R and S to find out the properties of each material. He recorded the results in the table below.</p>\n<figure><img src=\"images/WA3_StHilda/q12_fig1.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(Caption: properties table — Waterproof: Q=Yes, R=No, S=Yes; Breaks when dropped: Q=No, R=No, S=Yes; Allows most light to pass through: Q=Yes, R=No, S=Yes)</p>\n<p>(a) Which material could R and S be? Circle the correct answer.　[2]</p>\n<figure><img src=\"images/WA3_StHilda/q12_fig2.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(Caption: circle-the-answer table — R: (glass / plastic / fabric); S: (glass / plastic / fabric))</p>\n<p>John placed his mobile phone in the pouch as shown below. The pouch allowed him to read the messages on his mobile phone while keeping it dry in the water.</p>\n<figure><img src=\"images/WA3_StHilda/q12_fig3.png\" alt=\"\" loading=\"lazy\"></figure>\n<p>(Caption: a mobile phone placed in a waterproof pouch, labelled part Z of pouch and mobile phone)</p>\n<p>(b) Which material Q or R is most suitable to make part Z of the pouch? Explain your answer.　[2]</p>",
+"parts": [
+{"label": "(a)", "letter": "a", "type": "circle", "marks": 2, "hint": "Which material could R and S be?", "circles": [{"id": "a1", "label": "Material R", "options": ["glass", "plastic", "fabric"], "correct": "fabric"}, {"id": "a2", "label": "Material S", "options": ["glass", "plastic", "fabric"], "correct": "glass"}]},
+{"label": "(b)", "letter": "b", "type": "text", "marks": 2, "hint": "Which material is most suitable for part Z? Explain.", "cps": [2, 3, 4]}
+],
 "options": [],
 "myAnswer": "- (a) R = fabric；S = glass。\n  - (b) Material Q。Q is waterproof and allows most light to pass through, so John can read the messages while keeping the phone dry. R 不防水，会使手机弄湿。",
 "answer": "- (a) R = fabric; S = glass (the official answer circles the matching options).\n  - (b) Material Q. Q allows most light to pass through and does not absorb water (is waterproof), so John can read the messages while keeping the phone dry in water.",

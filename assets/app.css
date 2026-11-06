@@ -573,3 +573,33 @@ details.keypoints .kpbody{
 .figchip{font-size:12px;background:#fff;border:1px solid var(--line);
   border-radius:6px;padding:2px 8px;color:var(--ink-soft)}
 .qanswer.locked .figpanel button{opacity:.5;cursor:default}
+
+/* ---------------- "circle the correct answer" ----------------
+   The option words printed in the question are the answer widgets. A selected
+   word gets a hand-drawn-looking ring; wrong picks turn red on review. */
+.cgroup{white-space:nowrap}
+.cword{display:inline-block;border:2px solid transparent;border-radius:999px;
+  background:transparent;padding:1px 6px;margin:0 1px;line-height:1.35;
+  font:inherit;font-weight:600;color:var(--accent-dark);cursor:pointer;
+  transition:background .15s,border-color .15s,box-shadow .15s}
+.cword:hover:not(:disabled){background:var(--accent-soft);border-color:var(--accent)}
+.cword.sel{border-color:var(--accent);background:var(--accent-soft);
+  box-shadow:0 0 0 2px rgba(19,111,99,.16)}
+.cword:disabled{cursor:default;opacity:1}
+.cword.graded-ok{border-color:var(--ok);background:var(--ok-bg);color:#0b5c37;
+  box-shadow:none;font-weight:700}
+.cword.graded-miss{border-color:var(--bad);background:var(--bad-bg);color:#8c1d18;
+  box-shadow:none;text-decoration:line-through}
+.cslash{color:var(--muted);margin:0 4px;font-weight:400}
+.figtip,.cword{ -webkit-tap-highlight-color:transparent }
+.circlegroups{display:flex;flex-direction:column;gap:7px;margin:4px 0 2px}
+.cwordrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;
+  padding:7px 10px;background:#f3faf8;border:1px dashed var(--accent);
+  border-radius:9px;line-height:1.4}
+.crowlabel{font:600 12.5px/1.4 var(--ff);color:var(--ink-soft);margin-right:2px}
+.cwords{display:inline-flex;flex-wrap:wrap;align-items:center}
+.circlereadout{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px;min-height:0}
+.circchip{font-size:12.5px;background:#fff;border:1px solid var(--line);
+  border-radius:6px;padding:2px 9px;color:var(--accent-dark);font-weight:600}
+.circlehint{font:12.5px/1.55 var(--ff);color:var(--muted);margin-top:2px}
+.qanswer.locked .cword{cursor:default}

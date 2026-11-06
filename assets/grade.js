@@ -92,10 +92,23 @@
     return out.map(u => u / 2);
   }
 
+  /* Some bank entries accidentally turned a mark-scheme note into a scoring
+     checkpoint ("0.5 mark for each part", "usually 0.5 mark each"). It looks
+     like a keyword but can never be written by a pupil, so answering every
+     real part correctly still loses marks. Never score those rows. */
+  function isMarkNote(c) {
+    const s = String((c && c.span) || "");
+    if (s.length > 60) return false;
+    const flat = ((c && c.alts) || []).reduce((a, x) => a.concat(x || []), []);
+    if (!flat.length || !flat.every(t => /^\d+(?:\.\d+)?$/.test(String(t)))) return false;
+    return /(?:\d+(?:\.\d+)?|½)\s*marks?\s+(?:for\s+)?(?:each|per)\b/i.test(s);
+  }
+
   function gradeOEQ(q, text) {
     const set = answerWords(text);
-    const auto = (q.checkpoints || []).filter(c => !c.manual);
-    const manual = (q.checkpoints || []).filter(c => c.manual);
+    const real = (q.checkpoints || []).filter(c => !isMarkNote(c));
+    const auto = real.filter(c => !c.manual);
+    const manual = real.filter(c => c.manual);
     const res = auto.map(c => ({
       part: c.part || "",
       span: c.span,
@@ -234,5 +247,5 @@
     return { tfRes, tfScore, tfMarks, correct, total: tf.length, weights: plan, weight: Math.round(weight * 100) / 100 };
   }
 
-  root.QBGrade = { answerWords, tokenHit, altHit, gradeOEQ, normWord, gradeSlot, gradeSlots, gradeLines, gradeTF, allocateMarks, roundHalf };
+  root.QBGrade = { answerWords, tokenHit, altHit, gradeOEQ, isMarkNote, normWord, gradeSlot, gradeSlots, gradeLines, gradeTF, allocateMarks, roundHalf };
 })(typeof window !== "undefined" ? window : global);
